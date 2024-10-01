@@ -337,7 +337,6 @@ exports.updateInteractions = catchAsyncErrors(async (req, res, next) => {
       });
     }
 
-    // Save the updated user document with the updated similarity scores
     await user.save();
     console.log("Saved user with updated similarity scores.");
 
