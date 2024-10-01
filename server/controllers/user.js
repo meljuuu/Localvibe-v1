@@ -379,7 +379,33 @@ exports.followUnfollowUser = catchAsyncErrors(async (req, res, next) => {
         message: "User unfollowed successfully",
       });
     } else {
-      // ... (follow logic remains the same)
+      await User.updateOne(
+        { _id: followUserId },
+
+        { $push: { followers: { userId: loggedInUserId } } }
+      );
+
+      await User.updateOne(
+        { _id: loggedInUserId },
+
+        { $push: { following: { userId: followUserId } } }
+      );
+
+      await Notification.create({
+        creator: req.user,
+
+        type: "Follow",
+
+        title: "Followed you",
+
+        userId: followUserId,
+      });
+
+      res.status(200).json({
+        success: true,
+
+        message: "User followed successfully",
+      });
     }
   } catch (error) {
     return next(new ErrorHandler(error.message, 401));
