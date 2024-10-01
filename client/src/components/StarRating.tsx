@@ -2,14 +2,9 @@ import React from 'react';
 import {StyleSheet, View, Text, Image} from 'react-native';
 
 const StarRating = (props: any) => {
-  // This array will contain our star tags. We will include this
-  // array between the view tag.
   let stars = [];
-  // Loop 5 times
   for (var i = 1; i <= 5; i++) {
-    // set the path to filled stars
     let name = 'ios-star';
-    // If ratings is lower, set the path to unfilled stars
     if (i > props.ratings) {
       name = 'ios-star-outline';
     }
