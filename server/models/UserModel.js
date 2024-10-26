@@ -47,6 +47,16 @@ const userSchema = new mongoose.Schema(
         required: [true, "Please upload one profile picture!"],
       },
     },
+    coverPhoto: {
+      public_id: {
+        type: String,
+        default: null,
+      },
+      url: {
+        type: String,
+        default: null,
+      },
+    },
     followers: [
       {
         userId: {
@@ -73,6 +83,15 @@ const userSchema = new mongoose.Schema(
         score: {
           type: Number,
           default: 0,
+        },
+      },
+    ],
+    share: [
+      {
+        post_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Post",
+          required: true,
         },
       },
     ],
