@@ -7,38 +7,31 @@ const pinSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    // Business name
     businessName: {
       type: String,
       required: true,
     },
-    // Business description
     description: {
       type: String,
       required: true,
     },
-    // Business category (e.g., restaurant, salon, store, etc.)
     category: {
       type: String,
       required: true,
     },
-    // Latitude and longitude coordinates for the pin location
     latitude: {
       type: Number,
       default: null,
     },
-
     longitude: {
       type: Number,
       default: null,
     },
-    // Business contact information (optional)
     contactInfo: {
       phone: String,
       email: String,
       website: String,
     },
-    // Images of the business (optional)
     image: {
       public_id: {
         type: String,
@@ -47,7 +40,55 @@ const pinSchema = new mongoose.Schema(
         type: String,
       },
     },
-    // Timestamps for when the pin was created and updated
+    reviews: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        rating: {
+          type: Number,
+          min: 1,
+          max: 5,
+          required: true,
+        },
+        comment: {
+          type: String,
+          required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    operatingHours: {
+      monday: { open: String, close: String },
+      tuesday: { open: String, close: String },
+      wednesday: { open: String, close: String },
+      thursday: { open: String, close: String },
+      friday: { open: String, close: String },
+      saturday: { open: String, close: String },
+      sunday: { open: String, close: String },
+    },
+    reviewCount: {
+      type: Number,
+      default: 0,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    amenities: [
+      {
+        type: String,
+      },
+    ],
   },
   { timestamps: true }
 );
