@@ -52,6 +52,25 @@ exports.createPin = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
+exports.createReview = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const post = new Post({
+      comment: req.body.comment,
+      user: req.body.user,
+      rating: req.body.rating,
+    });
+
+    await post.save();
+
+    res.status(201).json({
+      success: true,
+      post,
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
 // Get all pins
 exports.getAllPins = catchAsyncErrors(async (req, res, next) => {
   try {
