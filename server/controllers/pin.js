@@ -54,18 +54,66 @@ exports.createPin = catchAsyncErrors(async (req, res, next) => {
 
 exports.createReview = catchAsyncErrors(async (req, res, next) => {
   try {
-    const post = new Post({
-      comment: req.body.comment,
-      user: req.body.user,
-      rating: req.body.rating,
-    });
+    const { pinId, user, comment, rating } = req.body;
 
-    await post.save();
+    // Validate that required fields are provided
+    if (!pinId || !user || !comment || !rating) {
+      return next(new ErrorHandler("Please provide all required fields", 400));
+    }
+
+    // Find the pin where the review should be added
+    const pin = await Pin.findById(pinId);
+
+    if (!pin) {
+      return next(new ErrorHandler("Pin not found", 404));
+    }
+
+    // Create the review object
+    const review = {
+      user,
+      comment,
+      rating,
+    };
+
+    // Add the review to the reviews array
+    pin.reviews.push(review);
+
+    // Update the review count and the average rating of the pin
+    pin.reviewCount = pin.reviews.length;
+
+    // Recalculate average rating
+    const totalRating = pin.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0
+    );
+    pin.averageRating = totalRating / pin.reviewCount;
+
+    // Save the updated pin document
+    await pin.save();
 
     res.status(201).json({
       success: true,
-      post,
+      message: "Review added successfully",
+      review: pin.reviews[pin.reviews.length - 1], // Return the newly added review
     });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
+// get all reviews for a specific pin
+exports.getAllReviews = catchAsyncErrors(async (req, res, next) => {
+  try {
+    // Find the pin by its ID
+    const pin = await Pin.findById(req.params.pinId);
+
+    // If no pin is found, return an error
+    if (!pin) {
+      return next(new ErrorHandler("Pin not found", 404));
+    }
+
+    // Return the reviews array from the pin
+    res.status(200).json({ success: true, reviews: pin.reviews });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
