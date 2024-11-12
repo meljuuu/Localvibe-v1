@@ -52,7 +52,6 @@ exports.createPin = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-
 exports.createReview = catchAsyncErrors(async (req, res, next) => {
   try {
     const { pinId, user, comment, rating } = req.body;
