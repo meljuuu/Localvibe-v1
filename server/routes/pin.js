@@ -11,6 +11,8 @@ const { isAuthenticatedUser } = require("../middleware/auth");
 
 const router = express.Router();
 
+router.route("/create-review").post(isAuthenticatedUser, createReview);
+
 router.route("/create-pin").post(isAuthenticatedUser, createPin);
 
 router.route("/get-all-pins").get(isAuthenticatedUser, getAllPins);
