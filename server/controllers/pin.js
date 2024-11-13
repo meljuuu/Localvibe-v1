@@ -74,6 +74,7 @@ exports.createReview = catchAsyncErrors(async (req, res, next) => {
       comment,
       rating,
     };
+      console.log(comment, user, rating);
 
     // Add the review to the reviews array
     pin.reviews.push(review);
