@@ -41,19 +41,20 @@ const pinSchema = new mongoose.Schema(
       },
     },
     reviews: [
-      {
-        user: {
-          type: Object,
-        },
-        rating: {
-          type: Number,
-          min: 1,
-          max: 5,
+      { 
+        userId: {
+          type: String, // userId is now a simple string
           required: true,
         },
-        comment: {
+        reviewText: {
           type: String,
           required: true,
+        },
+        ratings: {
+          type: Number,
+          required: true,
+          min: 1,
+          max: 5, // Assuming ratings are between 1 and 5
         },
         createdAt: {
           type: Date,
