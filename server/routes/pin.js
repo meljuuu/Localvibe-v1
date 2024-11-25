@@ -27,4 +27,10 @@ router.route("/update-pin/:id").put(isAuthenticatedUser, updatePinById);
 
 router.route("/delete-pin/:id").delete(isAuthenticatedUser, deletePinById);
 
+router.route("/add-review").post(isAuthenticatedUser, addReview);
+
+router.route("/modify-review").put(isAuthenticatedUser, modifyReview);
+
+router.route("/delete-review").delete(isAuthenticatedUser, deleteReview);
+
 module.exports = router;
