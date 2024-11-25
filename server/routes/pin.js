@@ -7,6 +7,9 @@ const {
   deletePinById,
   getAllReviews,
   createReview,
+  deleteReview,
+  modifyReview,
+  addReview,
 } = require("../controllers/pin");
 
 const { isAuthenticatedUser } = require("../middleware/auth");
