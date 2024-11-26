@@ -5,8 +5,6 @@ const {
   getPinById,
   updatePinById,
   deletePinById,
-  getAllReviews,
-  createReview,
   deleteReview,
   modifyReview,
   addReview,
