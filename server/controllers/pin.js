@@ -15,6 +15,7 @@ exports.createPin = catchAsyncErrors(async (req, res, next) => {
       longitude,
       contactInfo,
       image,
+      operatingHours,  // Add operatingHours to the body
     } = req.body;
 
     let myCloud;
@@ -33,6 +34,7 @@ exports.createPin = catchAsyncErrors(async (req, res, next) => {
       latitude,
       longitude,
       contactInfo,
+      operatingHours, // Include operatingHours when creating the pin
       image: image
         ? {
             public_id: myCloud.public_id,
@@ -52,131 +54,6 @@ exports.createPin = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-// Add a review to a pin 
-exports.addReview = catchAsyncErrors(async (req, res, next) => { 
-  try { 
-    const { pinId, userId, reviewText, ratings } = req.body; 
- 
-    if (!pinId || !userId || !reviewText || !ratings) { 
-      return next(new ErrorHandler("All fields are required", 400)); 
-    } 
- 
-    const pin = await Pin.findById(pinId); 
- 
-    if (!pin) { 
-      return next(new ErrorHandler("Pin not found", 404)); 
-    } 
- 
-    const review = { userId, reviewText, ratings, createdAt: new Date() }; 
- 
-    pin.reviews.push(review); 
-    pin.reviewCount = pin.reviews.length; 
- 
-    // Update average rating 
-    const totalRatings = pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0); 
-    pin.averageRating = totalRatings / pin.reviewCount; 
- 
-    await pin.save(); 
- 
-    res.status(201).json({ 
-      success: true, 
-      message: "Review added successfully", 
-      pin, 
-    }); 
-  } catch (error) { 
-    return next(new ErrorHandler(error.message, 400)); 
-  } 
-}); 
- 
-// Modify a review 
-exports.modifyReview = catchAsyncErrors(async (req, res, next) => { 
-  try { 
-    const { pinId, reviewId, userId, reviewText, ratings } = req.body; 
- 
-    if (!pinId || !reviewId || !userId || !reviewText || !ratings) { 
-      return next(new ErrorHandler("All fields are required", 400)); 
-    } 
- 
-    const pin = await Pin.findById(pinId); 
- 
-    if (!pin) { 
-      return next(new ErrorHandler("Pin not found", 404)); 
-    } 
- 
-    const review = pin.reviews.id(reviewId); 
- 
-    if (!review) { 
-      return next(new ErrorHandler("Review not found", 404)); 
-    } 
- 
-    if (review.userId !== userId) { 
-      return next(new ErrorHandler("You are not authorized to modify this review", 403)); 
-    } 
- 
-    review.reviewText = reviewText; 
-    review.ratings = ratings; 
- 
-    // Update average rating 
-    const totalRatings = pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0); 
-    pin.averageRating = totalRatings / pin.reviews.length; 
- 
-    await pin.save(); 
- 
-    res.status(200).json({ 
-      success: true, 
-      message: "Review modified successfully", 
-      pin, 
-    }); 
-  } catch (error) { 
-    return next(new ErrorHandler(error.message, 400)); 
-  } 
-}); 
- 
-// Delete a review 
-exports.deleteReview = catchAsyncErrors(async (req, res, next) => { 
-  try { 
-    const { pinId, reviewId, userId } = req.body; 
- 
-    if (!pinId || !reviewId || !userId) { 
-      return next(new ErrorHandler("All fields are required", 400)); 
-    } 
- 
-    const pin = await Pin.findById(pinId); 
- 
-    if (!pin) { 
-      return next(new ErrorHandler("Pin not found", 404)); 
-    } 
- 
-    const review = pin.reviews.id(reviewId); 
- 
-    if (!review) { 
-      return next(new ErrorHandler("Review not found", 404)); 
-    } 
- 
-    if (review.userId !== userId) { 
-      return next(new ErrorHandler("You are not authorized to delete this review", 403)); 
-    } 
- 
-    review.remove(); 
-    pin.reviewCount = pin.reviews.length; 
- 
-    // Update average rating 
-    const totalRatings = pin.reviews.length 
-      ? pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0) 
-      : 0; 
-    pin.averageRating = pin.reviews.length ? totalRatings / pin.reviews.length : 0; 
- 
-    await pin.save(); 
- 
-    res.status(200).json({ 
-      success: true, 
-      message: "Review deleted successfully", 
-      pin, 
-    }); 
-  } catch (error) { 
-    return next(new ErrorHandler(error.message, 400)); 
-  } 
-});
 
 // Get all pins
 exports.getAllPins = catchAsyncErrors(async (req, res, next) => {
@@ -246,6 +123,149 @@ exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
       message: "Pin deleted successfully",
     });
   } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
+// Add a review to a pin
+exports.addReview = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { pinId, userId, reviewText, ratings } = req.body;
+
+    if (!pinId || !userId || !reviewText || !ratings) {
+      return next(new ErrorHandler("All fields are required", 400));
+    }
+
+    const pin = await Pin.findById(pinId);
+
+    if (!pin) {
+      return next(new ErrorHandler("Pin not found", 404));
+    }
+
+    const review = { userId, reviewText, ratings, createdAt: new Date() };
+
+    pin.reviews.push(review);
+    pin.reviewCount = pin.reviews.length;
+
+    // Update average rating
+    const totalRatings = pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0);
+    pin.averageRating = totalRatings / pin.reviewCount;
+
+    // Check if the pin qualifies for verification
+    if (pin.reviewCount >= 10 && pin.averageRating >= 4.5) {
+      pin.isVerified = true;
+    } else {
+      pin.isVerified = false;  // Reset to false if conditions are not met
+    }
+
+    await pin.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Review added successfully",
+      pin,
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
+
+// Modify a review
+exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { pinId, reviewId, userId, reviewText, ratings } = req.body;
+
+    if (!pinId || !reviewId || !userId || !reviewText || !ratings) {
+      return next(new ErrorHandler("All fields are required", 400));
+    }
+
+    const pin = await Pin.findById(pinId);
+
+    if (!pin) {
+      return next(new ErrorHandler("Pin not found", 404));
+    }
+
+    const review = pin.reviews.id(reviewId);
+
+    if (!review) {
+      return next(new ErrorHandler("Review not found", 404));
+    }
+
+    if (review.userId !== userId) {
+      return next(new ErrorHandler("You are not authorized to modify this review", 403));
+    }
+
+    review.reviewText = reviewText;
+    review.ratings = ratings;
+
+    // Update average rating
+    const totalRatings = pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0);
+    pin.averageRating = totalRatings / pin.reviews.length;
+
+    await pin.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Review modified successfully",
+      pin,
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
+exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { pinId, reviewId, userId } = req.body;
+
+    // Ensure all required fields are present
+    if (!pinId || !reviewId || !userId) {
+      return next(new ErrorHandler("All fields are required", 400));
+    }
+
+    // Fetch the pin by ID
+    const pin = await Pin.findById(pinId);
+
+    if (!pin) {
+      return next(new ErrorHandler("Pin not found", 404));
+    }
+
+    // Find the review by ID
+    const review = pin.reviews.find((rev) => rev._id.toString() === reviewId);
+
+    if (!review) {
+      return next(new ErrorHandler("Review not found", 404));
+    }
+
+    // Check if the user is authorized to delete the review
+    if (review.userId.toString() !== userId) {
+      return next(new ErrorHandler("You are not authorized to delete this review", 403));
+    }
+
+    // Remove the review manually
+    pin.reviews = pin.reviews.filter((rev) => rev._id.toString() !== reviewId);
+
+    // Update review count
+    pin.reviewCount = pin.reviews.length;
+
+    // Update average rating
+    const totalRatings = pin.reviews.length
+      ? pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0)
+      : 0;
+    pin.averageRating = pin.reviews.length ? totalRatings / pin.reviews.length : 0;
+
+    // Save the updated pin
+    await pin.save();
+
+    // Respond with success
+    res.status(200).json({
+      success: true,
+      message: "Review deleted successfully",
+      pin,
+    });
+  } catch (error) {
+    // Handle unexpected errors
     return next(new ErrorHandler(error.message, 400));
   }
 });
