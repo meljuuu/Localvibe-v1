@@ -18,6 +18,11 @@ exports.createPin = catchAsyncErrors(async (req, res, next) => {
       operatingHours,  // Add operatingHours to the body
     } = req.body;
 
+    // Optional: Validate operatingHours format
+    if (!operatingHours || Object.keys(operatingHours).length !== 7) {
+      return next(new ErrorHandler("Invalid operating hours format", 400));
+    }
+
     let myCloud;
 
     if (image) {
@@ -53,6 +58,7 @@ exports.createPin = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
 
 
 // Get all pins
