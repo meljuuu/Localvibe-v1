@@ -5,11 +5,8 @@ const { isAuthenticatedUser } = require("../middleware/auth");
 
 const router = express.Router();
 
-// Report routesrouter.post("/report-content", (req, res, next) => {
-  console.log("Report content route hit!");
-  next(); // Call the controller function
-});
-
+// Report routes
+router.route("/report-content").post(isAuthenticatedUser, reportContent); // Report a post or pin
 
 // Admin route to get all reports
 router.route("/get-all-reports").get(isAuthenticatedUser, getAllReports);
