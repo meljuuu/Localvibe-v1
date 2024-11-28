@@ -4,19 +4,26 @@ const Pin = require("../models/PinModel"); // Assuming PinModel exists
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
-// Report a post or pin
+
 exports.reportContent = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { userId, postId, pinId, reason } = req.body;
+    const { userId, postId, pinId, reason, itemType } = req.body;
 
-    // Determine whether the report is for a post or pin
+    // Validate if itemType is either "post" or "pin"
+    if (itemType !== "post" && itemType !== "pin") {
+      return next(new ErrorHandler("Invalid itemType provided", 400));
+    }
+
+    // Set pinId or postId to null depending on itemType
     let reportedContent;
-    if (postId) {
-      reportedContent = await Post.findById(postId);
-    } else if (pinId) {
-      reportedContent = await Pin.findById(pinId);
-    } else {
-      return next(new ErrorHandler("No postId or pinId provided", 400));
+    if (itemType === "post") {
+      if (postId) {
+        reportedContent = await Post.findById(postId);
+      }
+    } else if (itemType === "pin") {
+      if (pinId) {
+        reportedContent = await Pin.findById(pinId);
+      }
     }
 
     if (!reportedContent) {
@@ -26,8 +33,8 @@ exports.reportContent = catchAsyncErrors(async (req, res, next) => {
     // Check if the user has already reported this content
     const existingReport = await Report.findOne({
       userId,
-      reportedItemId: postId || pinId, // Change to general `reportedItemId`
-      itemType: postId ? "post" : "pin", // Specify item type (post or pin)
+      reportedItemId: itemType === "post" ? postId : pinId, // Use postId or pinId depending on itemType
+      itemType, // Use the itemType directly (either "post" or "pin")
     });
 
     if (existingReport) {
@@ -40,10 +47,10 @@ exports.reportContent = catchAsyncErrors(async (req, res, next) => {
     // Create a new report
     const newReport = new Report({
       userId,
-      reportedItemId: postId || pinId, // Store either postId or pinId
-      itemType: postId ? "post" : "pin", // Specify item type (post or pin)
+      reportedItemId: itemType === "post" ? postId : pinId, // Store either postId or pinId based on itemType
+      itemType, // Use the itemType directly
       reason,
-      reportDate: Date.now(), // Store the report date
+      reportDate: Date.now(),
       reportCount: 1, // Initial count of 1
     });
 
@@ -55,20 +62,6 @@ exports.reportContent = catchAsyncErrors(async (req, res, next) => {
     });
   } catch (error) {
     console.log(error);
-    return next(new ErrorHandler(error.message, 400));
-  }
-});
-
-// Get all reports
-exports.getAllReports = catchAsyncErrors(async (req, res, next) => {
-  try {
-    const reports = await Report.find().sort({ reportDate: -1 });
-
-    res.status(200).json({
-      success: true,
-      reports,
-    });
-  } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
 });
