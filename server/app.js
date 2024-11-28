@@ -39,13 +39,16 @@ app.post("/api/updateUserLocation", async (req, res) => {
 });
 
 // Route imports
+// Route imports
 const user = require("./routes/user");
 const post = require("./routes/Post");
 const pin = require("./routes/pin");
+const report = require("./routes/report");
 
 app.use("/api/v1", user);
 app.use("/api/v1", post);
 app.use("/api/v1", pin);
+app.use("/api/v1", report);
 
 // it's for errorHandeling
 app.use(ErrorHandler);
