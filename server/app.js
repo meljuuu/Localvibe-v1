@@ -39,7 +39,6 @@ app.post("/api/updateUserLocation", async (req, res) => {
 });
 
 // Route imports
-// Route imports
 const user = require("./routes/user");
 const post = require("./routes/Post");
 const pin = require("./routes/pin");
