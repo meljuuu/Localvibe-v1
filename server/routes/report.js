@@ -1,17 +1,17 @@
 const express = require("express");
-const { reportContent, getAllReports, deleteReport } = require("../controllers/report");
-
-const { isAuthenticatedUser } = require("../middleware/auth");
-
+const {
+  createOrUpdateReport,
+  getAllReports,
+  getReportsByItem,
+  deleteReport,
+  deleteReportsByItem,
+} = require("../controllers/report");
 const router = express.Router();
 
-// Report routes
-router.route("/report-content").post(isAuthenticatedUser, reportContent); // Report a post or pin
-
-// Admin route to get all reports
-router.route("/get-all-reports").get(isAuthenticatedUser, getAllReports);
-
-// Admin route to delete a report
-router.route("/delete-report/:id").delete(isAuthenticatedUser, deleteReport);
+router.post("/reports", createOrUpdateReport);
+router.get("/reports", getAllReports);
+router.get("/reports/:reportedItemId/:itemType", getReportsByItem);
+router.delete("/reports/:id", deleteReport);
+router.delete("/reports/item/:reportedItemId/:itemType", deleteReportsByItem);
 
 module.exports = router;
