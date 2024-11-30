@@ -275,3 +275,41 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
+// Increment the visit count for a pin
+exports.incrementVisitCount = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { pinId, userId } = req.body;
+
+    if (!pinId || !userId) {
+      return next(new ErrorHandler("Pin ID and User ID are required", 400));
+    }
+
+    const pin = await Pin.findById(pinId);
+
+    if (!pin) {
+      return next(new ErrorHandler("Pin not found", 404));
+    }
+
+    // Check if the user has already visited this pin
+    if (pin.visitedBy && pin.visitedBy.includes(userId)) {
+      return next(new ErrorHandler("User has already visited this pin", 400));
+    }
+
+    // Add the userId to the visitedBy array
+    pin.visitedBy.push(userId);
+
+    // Increment the visit count
+    pin.visitCount += 1;
+
+    await pin.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Visit count incremented successfully",
+      pin,
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
