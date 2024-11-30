@@ -6,12 +6,14 @@ const {
   deleteReport,
   deleteReportsByItem,
 } = require("../controllers/report");
+
+const { isAuthenticatedUser } = require("../middleware/auth");
 const router = express.Router();
 
-router.post("/create-or-update-report", createOrUpdateReport);
-router.get("/get-all-reports", getAllReports);
-router.get("/get-all-reports:reportedItemId/:itemType", getReportsByItem);
-router.delete("/get-all-reports/:id", deleteReport);
-router.delete("/get-reports-by-item/:reportedItemId/:itemType", deleteReportsByItem);
+router.route("/create-or-update-report").post(isAuthenticatedUser, createOrUpdateReport);
+router.route("/get-all-reports").get(isAuthenticatedUser, getAllReports);
+router.route("/get-all-reports:reportedItemId/:itemType").get(isAuthenticatedUser, getReportsByItem);
+router.route("/get-all-reports/:id").delete(isAuthenticatedUser, deleteReport);
+router.route("/get-reports-by-item/:reportedItemId/:itemType").delete(isAuthenticatedUser, deleteReportsByItem);
 
 module.exports = router;
