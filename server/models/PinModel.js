@@ -21,27 +21,60 @@ const pinSchema = new mongoose.Schema(
     },
     latitude: {
       type: Number,
-      default: null,
+      required: true,
     },
     longitude: {
       type: Number,
-      default: null,
+      required: true,
     },
     contactInfo: {
-      phone: String,
-      email: String,
-      website: String,
+      phone: {
+        type: String,
+        default: null,
+      },
+      email: {
+        type: String,
+        default: null,
+      },
+      website: {
+        type: String,
+        default: null,
+      },
     },
     image: {
       public_id: {
         type: String,
+        default: null,
       },
       url: {
         type: String,
+        default: null,
       },
     },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    reviewCount: {
+      type: Number,
+      default: 0,
+    },
+    // Change visitCount to track user visits
+    visitCount: {
+      type: [String], // Array of userIds
+      default: [], // Stores unique userIds who visited the post
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    amenities: {
+      type: [String],
+      default: [],
+    },
+    // Embedded reviews schema
     reviews: [
-      { 
+      {
         userId: {
           type: String, // userId is now a simple string
           required: true,
@@ -62,10 +95,6 @@ const pinSchema = new mongoose.Schema(
         },
       },
     ],
-    averageRating: {
-      type: Number,
-      default: 0,
-    },
     operatingHours: {
       monday: { open: String, close: String },
       tuesday: { open: String, close: String },
@@ -75,25 +104,21 @@ const pinSchema = new mongoose.Schema(
       saturday: { open: String, close: String },
       sunday: { open: String, close: String },
     },
-    reviewCount: {
-      type: Number,
-      default: 0,
-    },
-    visitCount: {
-      type: Number,
-      default: 0,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    amenities: [
-      {
-        type: String,
-      },
-    ],
   },
   { timestamps: true }
 );
+
+// Method to add a visit, ensuring no duplicates
+pinSchema.methods.addVisit = function (userId) {
+  // Check if the userId is already in the visitCount array
+  if (!this.visitCount.includes(userId)) {
+    // Add the userId to the visitCount array
+    this.visitCount.push(userId);
+    // Save the updated pin
+    return this.save();
+  }
+  // Return the pin without changes if the user has already visited
+  return Promise.resolve(this);
+};
 
 module.exports = mongoose.model("Pin", pinSchema);
