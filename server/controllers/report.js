@@ -1,87 +1,117 @@
-const Report = require("../models/ReportModel"); // Assuming you have created ReportModel
-const Post = require("../models/PostModel");
-const Pin = require("../models/PinModel"); // Assuming PinModel exists
+const Report = require("../models/ReportModel");
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
-
-exports.reportContent = catchAsyncErrors(async (req, res, next) => {
+// Create or increment a report
+exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { userId, postId, pinId, reason, itemType } = req.body;
+    const { userId, reportedItemId, itemType, reason } = req.body;
 
-    // Validate if itemType is either "post" or "pin"
-    if (itemType !== "post" && itemType !== "pin") {
-      return next(new ErrorHandler("Invalid itemType provided", 400));
+    // Validate required fields
+    if (!userId || !reportedItemId || !itemType || !reason) {
+      return next(new ErrorHandler("All fields are required", 400));
     }
 
-    // Set pinId or postId to null depending on itemType
-    let reportedContent;
-    if (itemType === "post") {
-      if (postId) {
-        reportedContent = await Post.findById(postId);
-      }
-    } else if (itemType === "pin") {
-      if (pinId) {
-        reportedContent = await Pin.findById(pinId);
-      }
-    }
-
-    if (!reportedContent) {
-      return next(new ErrorHandler("Content not found", 404));
-    }
-
-    // Check if the user has already reported this content
-    const existingReport = await Report.findOne({
-      userId,
-      reportedItemId: itemType === "post" ? postId : pinId, // Use postId or pinId depending on itemType
-      itemType, // Use the itemType directly (either "post" or "pin")
-    });
+    // Check if a report already exists for the same item and type
+    const existingReport = await Report.findOne({ reportedItemId, itemType });
 
     if (existingReport) {
-      return res.status(400).json({
-        success: false,
-        message: "You have already reported this content",
+      // Increment the report count if already reported
+      await Report.incrementReportCount(reportedItemId, itemType);
+      return res.status(200).json({
+        success: true,
+        message: "Report count incremented",
+      });
+    } else {
+      // Create a new report
+      const report = await Report.create({
+        userId,
+        reportedItemId,
+        itemType,
+        reason,
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Report created successfully",
+        report,
       });
     }
-
-    // Create a new report
-    const newReport = new Report({
-      userId,
-      reportedItemId: itemType === "post" ? postId : pinId, // Store either postId or pinId based on itemType
-      itemType, // Use the itemType directly
-      reason,
-      reportDate: Date.now(),
-      reportCount: 1, // Initial count of 1
-    });
-
-    await newReport.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Content reported successfully",
-    });
   } catch (error) {
-    console.log(error);
-    return next(new ErrorHandler(error.message, 400));
+    return next(new ErrorHandler(error.message, 500));
   }
 });
 
-// Delete a report (Admin only)
-exports.deleteReport = catchAsyncErrors(async (req, res, next) => {
+// Get all reports
+exports.getAllReports = catchAsyncErrors(async (req, res, next) => {
   try {
-    const report = await Report.findById(req.params.id);
-    if (!report) {
-      return next(new ErrorHandler("Report not found with this id", 404));
+    const reports = await Report.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      reports,
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
+
+// Get reports for a specific item
+exports.getReportsByItem = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { reportedItemId, itemType } = req.params;
+
+    const reports = await Report.find({ reportedItemId, itemType });
+
+    if (!reports.length) {
+      return next(new ErrorHandler("No reports found for this item", 404));
     }
 
-    await Report.deleteOne({ _id: req.params.id });
+    res.status(200).json({
+      success: true,
+      reports,
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
+
+// Delete a report by ID
+exports.deleteReport = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const report = await Report.findByIdAndDelete(id);
+
+    if (!report) {
+      return next(new ErrorHandler("Report not found", 404));
+    }
 
     res.status(200).json({
       success: true,
       message: "Report deleted successfully",
     });
   } catch (error) {
-    console.log(error);
-    return next(new ErrorHandler(error.message, 400));
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
+
+// Delete all reports for a specific item
+exports.deleteReportsByItem = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { reportedItemId, itemType } = req.params;
+
+    const result = await Report.deleteMany({ reportedItemId, itemType });
+
+    if (result.deletedCount === 0) {
+      return next(new ErrorHandler("No reports found for this item", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Reports deleted successfully",
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
   }
 });
