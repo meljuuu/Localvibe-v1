@@ -11,6 +11,7 @@ const {
   incrementVisitCount,  // Import the incrementVisitCount controller
 } = require("../controllers/pin");
 
+
 const { isAuthenticatedUser } = require("../middleware/auth");
 
 const router = express.Router();
