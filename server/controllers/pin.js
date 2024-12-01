@@ -282,7 +282,7 @@ exports.addVisit = catchAsyncErrors(async (req, res, next) => {
     const { pinId, userId } = req.body;
 
     if (!pinId || !userId) {
-      return next(new ErrorHandler("Pin ID and User ID are required", 403));
+      return next(new ErrorHandler("Pin ID and User ID are required", 400));
     }
 
     // Find the pin by ID
@@ -293,7 +293,7 @@ exports.addVisit = catchAsyncErrors(async (req, res, next) => {
 
     // Check if the user has already visited the pin
     if (pin.visitCount.includes(userId)) {
-      return next(new ErrorHandler("User has already visited this pin", 401));
+      return next(new ErrorHandler("User has already visited this pin", 400));
     }
 
     // Add the user ID to the visitCount array
@@ -308,7 +308,7 @@ exports.addVisit = catchAsyncErrors(async (req, res, next) => {
       pin,
     });
   } catch (error) {
-    return next(new ErrorHandler(error.message, 402));
+    return next(new ErrorHandler(error.message, 400));
   }
 });
 
