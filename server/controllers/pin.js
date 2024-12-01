@@ -2,6 +2,7 @@ const Pin = require("../models/PinModel");
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const cloudinary = require("cloudinary");
+
 // Create a new pin
 exports.createPin = catchAsyncErrors(async (req, res, next) => {
   try {
@@ -275,8 +276,8 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-
-exports.incrementVisitCount = catchAsyncErrors(async (req, res, next) => {
+// Add a visit to a pin
+exports.addVisit = catchAsyncErrors(async (req, res, next) => {
   try {
     const { pinId, userId } = req.body;
 
@@ -284,33 +285,30 @@ exports.incrementVisitCount = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Pin ID and User ID are required", 400));
     }
 
-    // Find the pin
+    // Find the pin by ID
     const pin = await Pin.findById(pinId);
     if (!pin) {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    // Check if the user already visited
+    // Check if the user has already visited the pin
     if (pin.visitCount.includes(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: "User has already visited this pin",
-      });
+      return next(new ErrorHandler("User has already visited this pin", 400));
     }
 
-    // Add userId to visitCount
+    // Add the user ID to the visitCount array
     pin.visitCount.push(userId);
 
-    // Save changes
+    // Save the updated pin document
     await pin.save();
 
     res.status(200).json({
       success: true,
-      message: "Visit count incremented successfully",
+      message: "Visit added successfully",
       pin,
     });
   } catch (error) {
-    console.error("Error in incrementVisitCount:", error);
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
