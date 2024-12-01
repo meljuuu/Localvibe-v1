@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const pinSchema = new mongoose.Schema(
   {
     createdBy: {
@@ -106,18 +107,5 @@ const pinSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Method to add a visit, ensuring no duplicates
-pinSchema.methods.addVisit = function (userId) {
-  // Check if the userId is already in the visitCount array
-  if (!this.visitCount.includes(userId)) {
-    // Add the userId to the visitCount array
-    this.visitCount.push(userId);
-    // Save the updated pin
-    return this.save();
-  }
-  // Return the pin without changes if the user has already visited
-  return Promise.resolve(this);
-};
 
 module.exports = mongoose.model("Pin", pinSchema);
