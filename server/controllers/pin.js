@@ -2,7 +2,6 @@ const Pin = require("../models/PinModel");
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const cloudinary = require("cloudinary");
-
 // Create a new pin
 exports.createPin = catchAsyncErrors(async (req, res, next) => {
   try {
