@@ -286,7 +286,7 @@ exports.addVisit = catchAsyncErrors(async (req, res, next) => {
     }
 
     // Find the pin by ID
-    const pin = await Pin.findById(pinId);
+    const pin = await Pin.findById(req.params.id);
     if (!pin) {
       return next(new ErrorHandler("Pin not found", 404));
     }
