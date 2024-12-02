@@ -276,39 +276,33 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-// Add a visit to a pin
-exports.addVisit = catchAsyncErrors(async (req, res, next) => {
+exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
   try {
     const { pinId, userId } = req.body;
 
+    // Validate input
     if (!pinId || !userId) {
       return next(new ErrorHandler("Pin ID and User ID are required", 400));
     }
 
-    // Find the pin by ID
-    const pin = await Pin.findById(req.params.id);
+    const pin = await Pin.findById(pinId);
+
     if (!pin) {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    // Check if the user has already visited the pin
-    if (pin.visitCount.includes(userId)) {
-      return next(new ErrorHandler("User has already visited this pin", 400));
+    // Prevent duplicate visitors
+    if (!pin.visitors.includes(userId)) {
+      pin.visitors.push(userId);
+      await pin.save();
     }
-
-    // Add the user ID to the visitCount array
-    pin.visitCount.push(userId);
-
-    // Save the updated pin document
-    await pin.save();
 
     res.status(200).json({
       success: true,
-      message: "Visit added successfully",
-      pin,
+      message: "Visitor added successfully",
+      visitors: pin.visitors,
     });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
 });
-
