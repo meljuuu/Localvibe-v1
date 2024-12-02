@@ -2,6 +2,7 @@ const Pin = require("../models/PinModel");
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const cloudinary = require("cloudinary");
+
 // Create a new pin
 exports.createPin = catchAsyncErrors(async (req, res, next) => {
   try {
@@ -281,7 +282,7 @@ exports.addVisit = catchAsyncErrors(async (req, res, next) => {
     const { pinId, userId } = req.body;
 
     if (!pinId || !userId) {
-      return next(new ErrorHandler("Pin ID and User ID are required", 402));
+      return next(new ErrorHandler("Pin ID and User ID are required", 400));
     }
 
     // Find the pin by ID
@@ -292,7 +293,7 @@ exports.addVisit = catchAsyncErrors(async (req, res, next) => {
 
     // Check if the user has already visited the pin
     if (pin.visitCount.includes(userId)) {
-      return next(new ErrorHandler("User has already visited this pin", 401));
+      return next(new ErrorHandler("User has already visited this pin", 400));
     }
 
     // Add the user ID to the visitCount array
