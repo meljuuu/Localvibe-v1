@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const pinSchema = new mongoose.Schema(
   {
     createdBy: {
@@ -58,11 +59,6 @@ const pinSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    // Change visitCount to track user visits
-    visitCount: {
-      type: [String], // Array of userIds
-      default: [], // Stores unique userIds who visited the post
-    },
     isVerified: {
       type: Boolean,
       default: false,
@@ -71,11 +67,10 @@ const pinSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-    // Embedded reviews schema
     reviews: [
       {
         userId: {
-          type: String, // userId is now a simple string
+          type: String, // userId as string
           required: true,
         },
         reviewText: {
@@ -86,7 +81,7 @@ const pinSchema = new mongoose.Schema(
           type: Number,
           required: true,
           min: 1,
-          max: 5, // Assuming ratings are between 1 and 5
+          max: 5,
         },
         createdAt: {
           type: Date,
@@ -102,6 +97,10 @@ const pinSchema = new mongoose.Schema(
       friday: { open: String, close: String },
       saturday: { open: String, close: String },
       sunday: { open: String, close: String },
+    },
+    visitors: {
+      type: [String], // Store user IDs as strings
+      default: [],
     },
   },
   { timestamps: true }
