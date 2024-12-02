@@ -8,10 +8,11 @@ const {
   addReview,
   modifyReview,
   deleteReview,
-  addVisit, 
+  addVisitor,  // Import the incrementVisitCount controller
 } = require("../controllers/pin");
 
 const { isAuthenticatedUser } = require("../middleware/auth");
+
 const router = express.Router();
 
 // Pin routes
@@ -27,7 +28,7 @@ router.route("/modify-review").put(isAuthenticatedUser, modifyReview);
 router.route("/delete-review").delete(isAuthenticatedUser, deleteReview);
 
 // Visit count route
-router.route("/add-visit").post(isAuthenticatedUser, addVisit);
+router.route("/add-visitor").post(isAuthenticatedUser, addVisitor);
 
 module.exports = router;
   
