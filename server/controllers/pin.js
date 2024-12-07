@@ -89,44 +89,65 @@ exports.getPinById = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Update pin by ID
+// Update pin by ID with additional fields
 exports.updatePinById = catchAsyncErrors(async (req, res, next) => {
   try {
     const pinId = req.params.id;
-    const updateFields = req.body;
+    const {
+      description,
+      category,
+      contactInfo,
+      image,
+      operatingHours,
+    } = req.body;
 
-    const pin = await Pin.findByIdAndUpdate(pinId, updateFields, {
-      new: true,
-      runValidators: true,
-    });
+    // Validate operatingHours format if provided
+    if (operatingHours && Object.keys(operatingHours).length !== 7) {
+      return next(new ErrorHandler("Invalid operating hours format", 400));
+    }
 
+    // Find the pin to be updated
+    const pin = await Pin.findById(pinId);
     if (!pin) {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    res.status(200).json({ success: true, pin });
-  } catch (error) {
-    return next(new ErrorHandler(error.message, 400));
-  }
-});
+    // Handle image upload (if new image is provided)
+    let imageData = pin.image;
+    if (image) {
+      // Delete the old image from cloudinary if it exists
+      if (pin.image?.public_id) {
+        await cloudinary.v2.uploader.destroy(pin.image.public_id);
+      }
 
-// Delete pin by ID
-exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
-  console.log("trying to delete pin");
-  try {
-    const pin = await Pin.findById(req.params.id);
-    if (!pin) {
-      return next(new ErrorHandler("Pin not found", 404));
+      // Upload new image to cloudinary
+      const myCloud = await cloudinary.v2.uploader.upload(image, {
+        folder: "pins",
+      });
+
+      imageData = {
+        public_id: myCloud.public_id,
+        url: myCloud.secure_url,
+      };
     }
 
-    if (pin.image?.public_id) {
-      await cloudinary.v2.uploader.destroy(pin.image.public_id);
-    }
-
-    await Pin.deleteOne({ _id: req.params.id });
+    // Update the fields
+    const updatedPin = await Pin.findByIdAndUpdate(
+      pinId,
+      {
+        description: description || pin.description,
+        category: category || pin.category,
+        contactInfo: contactInfo || pin.contactInfo,
+        image: imageData || pin.image,
+        operatingHours: operatingHours || pin.operatingHours,
+      },
+      { new: true, runValidators: true }
+    );
 
     res.status(200).json({
       success: true,
-      message: "Pin deleted successfully",
+      message: "Pin updated successfully",
+      pin: updatedPin,
     });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
