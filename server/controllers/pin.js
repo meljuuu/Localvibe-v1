@@ -89,11 +89,28 @@ exports.getPinById = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Update pin by ID
+// Update pin by ID
 exports.updatePinById = catchAsyncErrors(async (req, res, next) => {
   try {
     const pinId = req.params.id;
     const updateFields = req.body;
 
+    let myCloud;
+
+    // If an image is provided, upload it to Cloudinary
+    if (updateFields.image) {
+      myCloud = await cloudinary.v2.uploader.upload(updateFields.image, {
+        folder: "pins",
+      });
+
+      // Update the image field
+      updateFields.image = {
+        public_id: myCloud.public_id,
+        url: myCloud.secure_url,
+      };
+    }
+
+    // Find and update the pin
     const pin = await Pin.findByIdAndUpdate(pinId, updateFields, {
       new: true,
       runValidators: true,
