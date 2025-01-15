@@ -126,6 +126,7 @@ exports.updatePinById = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
+
 // Delete pin by ID
 exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
   console.log("trying to delete pin");
@@ -153,9 +154,9 @@ exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
 // Add a review to a pin
 exports.addReview = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { pinId, userId, reviewText, ratings } = req.body;
+    const { pinId, user, reviewText, ratings } = req.body;  // Changed userId to user
 
-    if (!pinId || !userId || !reviewText || !ratings) {
+    if (!pinId || !user || !reviewText || !ratings) {  // Validate user object
       return next(new ErrorHandler("All fields are required", 400));
     }
 
@@ -165,7 +166,7 @@ exports.addReview = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    const review = { userId, reviewText, ratings, createdAt: new Date() };
+    const review = { user, reviewText, ratings, createdAt: new Date() };  // Store entire user object
 
     pin.reviews.push(review);
     pin.reviewCount = pin.reviews.length;
@@ -193,13 +194,12 @@ exports.addReview = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-
 // Modify a review
 exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { pinId, reviewId, userId, reviewText, ratings } = req.body;
+    const { pinId, reviewId, user, reviewText, ratings } = req.body;  // Changed userId to user
 
-    if (!pinId || !reviewId || !userId || !reviewText || !ratings) {
+    if (!pinId || !reviewId || !user || !reviewText || !ratings) {  // Validate user object
       return next(new ErrorHandler("All fields are required", 400));
     }
 
@@ -215,7 +215,7 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Review not found", 404));
     }
 
-    if (review.userId !== userId) {
+    if (review.user._id.toString() !== user._id.toString()) {  // Compare user._id instead of userId
       return next(new ErrorHandler("You are not authorized to modify this review", 403));
     }
 
@@ -240,10 +240,10 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
 
 exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { pinId, reviewId, userId } = req.body;
+    const { pinId, reviewId, user } = req.body;  // Changed userId to user
 
     // Ensure all required fields are present
-    if (!pinId || !reviewId || !userId) {
+    if (!pinId || !reviewId || !user) {  // Validate user object
       return next(new ErrorHandler("All fields are required", 400));
     }
 
@@ -262,7 +262,7 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
     }
 
     // Check if the user is authorized to delete the review
-    if (review.userId.toString() !== userId) {
+    if (review.user._id.toString() !== user._id.toString()) {  // Compare user._id instead of userId
       return next(new ErrorHandler("You are not authorized to delete this review", 403));
     }
 
@@ -292,6 +292,7 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
 
 exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
   try {
