@@ -69,8 +69,9 @@ const pinSchema = new mongoose.Schema(
     },
     reviews: [
       {
-        userId: {
-          type: String, // userId as string
+        user: {  // Changed from userId to user object
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
           required: true,
         },
         reviewText: {
