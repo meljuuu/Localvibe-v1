@@ -69,10 +69,10 @@ const pinSchema = new mongoose.Schema(
     },
     reviews: [
       {
-        user: {  // Changed from userId to user object
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
+        user: {  // Storing user details that left the review
+          _id: mongoose.Schema.Types.ObjectId, // Referencing the user
+          name: { type: String, required: true },
+          image: { type: String, required: true }, // Avatar image URL
         },
         reviewText: {
           type: String,
