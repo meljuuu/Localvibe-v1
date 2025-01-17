@@ -253,56 +253,53 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
   try {
     const { pinId, reviewId, userId } = req.body;
 
-    // Ensure all required fields are present
     if (!pinId || !reviewId || !userId) {
       return next(new ErrorHandler("All fields are required", 400));
     }
 
-    // Fetch the pin by ID
     const pin = await Pin.findById(pinId);
 
     if (!pin) {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    // Find the review by ID
-    const review = pin.reviews.find((rev) => rev._id.toString() === reviewId);
+    // Find the review safely
+    const review = pin.reviews.find((rev) => rev?._id?.toString() === reviewId);
 
     if (!review) {
       return next(new ErrorHandler("Review not found", 404));
     }
 
-    // Check if the user is authorized to delete the review
+    // Check if userId exists in review
+    if (!review.userId) {
+      return next(new ErrorHandler("Review data is corrupted: missing userId", 500));
+    }
+
+    // Check authorization
     if (review.userId.toString() !== userId) {
       return next(new ErrorHandler("You are not authorized to delete this review", 403));
     }
 
-    // Remove the review manually
+    // Remove the review
     pin.reviews = pin.reviews.filter((rev) => rev._id.toString() !== reviewId);
 
-    // Update review count
+    // Update review count and average rating
     pin.reviewCount = pin.reviews.length;
-
-    // Update average rating
-    const totalRatings = pin.reviews.length
-      ? pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0)
-      : 0;
+    const totalRatings = pin.reviews.reduce((sum, rev) => sum + (rev.ratings || 0), 0);
     pin.averageRating = pin.reviews.length ? totalRatings / pin.reviews.length : 0;
 
-    // Save the updated pin
     await pin.save();
 
-    // Respond with success
     res.status(200).json({
       success: true,
       message: "Review deleted successfully",
       pin,
     });
   } catch (error) {
-    // Handle unexpected errors
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
 
 exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
   try {
