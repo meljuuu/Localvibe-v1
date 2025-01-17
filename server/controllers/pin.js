@@ -249,6 +249,7 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
 });
 
 
+// Delete review from pin
 exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
   try {
     const { pinId, reviewId, userId } = req.body;
@@ -299,6 +300,7 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
 
 
 exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
