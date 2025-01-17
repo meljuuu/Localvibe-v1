@@ -250,11 +250,12 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
 
 
 // Delete review from pin
-exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
+exports.addReview = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { pinId, reviewId, userId } = req.body;
+    const { pinId, reviewText, ratings } = req.body;
+    const userId = req.user._id;  // Get the userId from the logged-in user
 
-    if (!pinId || !reviewId || !userId) {
+    if (!pinId || !reviewText || !ratings) {
       return next(new ErrorHandler("All fields are required", 400));
     }
 
@@ -264,44 +265,33 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    // Find the review safely
-    const review = pin.reviews.find((rev) => rev?._id?.toString() === reviewId);
+    const review = { userId, reviewText, ratings, createdAt: new Date() };
 
-    if (!review) {
-      return next(new ErrorHandler("Review not found", 404));
-    }
-
-    // Check if userId exists in review
-    if (!review.userId) {
-      return next(new ErrorHandler("Review data is corrupted: missing userId", 500));
-    }
-
-    // Check authorization
-    if (review.userId.toString() !== userId) {
-      return next(new ErrorHandler("You are not authorized to delete this review", 403));
-    }
-
-    // Remove the review
-    pin.reviews = pin.reviews.filter((rev) => rev._id.toString() !== reviewId);
-
-    // Update review count and average rating
+    pin.reviews.push(review);
     pin.reviewCount = pin.reviews.length;
-    const totalRatings = pin.reviews.reduce((sum, rev) => sum + (rev.ratings || 0), 0);
-    pin.averageRating = pin.reviews.length ? totalRatings / pin.reviews.length : 0;
+
+    // Update average rating
+    const totalRatings = pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0);
+    pin.averageRating = totalRatings / pin.reviewCount;
+
+    // Check if the pin qualifies for verification
+    if (pin.reviewCount >= 10 && pin.averageRating >= 4.5) {
+      pin.isVerified = true;
+    } else {
+      pin.isVerified = false;  // Reset to false if conditions are not met
+    }
 
     await pin.save();
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
-      message: "Review deleted successfully",
+      message: "Review added successfully",
       pin,
     });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
 });
-
-
 
 exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
   try {
