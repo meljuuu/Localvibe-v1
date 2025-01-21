@@ -154,9 +154,10 @@ exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
 // Add a review to a pin
 exports.addReview = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { pinId, userId, reviewText, ratings } = req.body;
+    const { pinId, reviewText, ratings } = req.body;
+    const userId = req.user._id;  // Get the userId from the logged-in user
 
-    if (!pinId || !userId || !reviewText || !ratings) {
+    if (!pinId || !reviewText || !ratings) {
       return next(new ErrorHandler("All fields are required", 400));
     }
 
