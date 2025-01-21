@@ -155,7 +155,7 @@ exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
 exports.addReview = catchAsyncErrors(async (req, res, next) => {
   try {
     const { pinId, reviewText, ratings } = req.body;
-    const userId = req.user._id;  // Get the userId from the logged-in user
+    const userId = req.user._id;  // Get the userId from the logged-in user (from token)
 
     if (!pinId || !reviewText || !ratings) {
       return next(new ErrorHandler("All fields are required", 400));
