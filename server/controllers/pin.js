@@ -213,20 +213,18 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
     }
 
     const pin = await Pin.findById(pinId);
-
     if (!pin) {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
     const review = pin.reviews.id(reviewId);
-
     if (!review) {
       return next(new ErrorHandler("Review not found", 404));
     }
 
-    // Log user and review comparison for debugging
-    console.log('User ID:', userId);
-    console.log('Review User ID:', review.user._id.toString());
+    // Debugging logs
+    console.log('User ID in request:', userId);
+    console.log('Review owner ID in DB:', review.user._id.toString());
 
     if (review.user._id.toString() !== userId) {
       return next(new ErrorHandler("You are not authorized to modify this review", 403));
@@ -241,10 +239,12 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
     // Recalculate average rating
     const oldRating = review.ratings;
     const newRating = ratings;
-
-    pin.averageRating = (pin.averageRating * pin.reviewCount - oldRating + newRating) / pin.reviewCount;
+    pin.averageRating =
+      (pin.averageRating * pin.reviewCount - oldRating + newRating) / pin.reviewCount;
 
     await pin.save();
+
+    console.log("Review modified successfully:", review);
 
     res.status(200).json({
       success: true,
@@ -252,9 +252,11 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
       pin,
     });
   } catch (error) {
+    console.error("Modify review controller error:", error);
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
 
 
 // Delete review from pin
