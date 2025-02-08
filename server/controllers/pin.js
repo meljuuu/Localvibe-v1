@@ -203,7 +203,6 @@ exports.addReview = catchAsyncErrors(async (req, res, next) => {
 
 
 
-// Modify a review
 exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
   try {
     const { pinId, reviewId, userId, reviewText, ratings } = req.body;
@@ -217,13 +216,16 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    // Find the review by ID and userId (to prevent unauthorized modification)
-    const review = pin.reviews.find(
-      rev => rev._id.toString() === reviewId && rev.userId.toString() === userId
-    );
+    // Find the review inside the pin
+    const review = pin.reviews.find((r) => r._id.toString() === reviewId);
 
     if (!review) {
-      return next(new ErrorHandler("Review not found or unauthorized", 403));
+      return next(new ErrorHandler("Review not found", 404));
+    }
+
+    // Ensure the user is the owner of the review
+    if (review.userId.toString() !== userId) {
+      return next(new ErrorHandler("Unauthorized: Cannot modify this review", 403));
     }
 
     // Update review fields
@@ -234,7 +236,7 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
     const totalRatings = pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0);
     pin.averageRating = totalRatings / pin.reviews.length;
 
-    await pin.save();
+    await pin.save(); // Save changes
 
     res.status(200).json({
       success: true,
@@ -249,14 +251,12 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
 
 
 
-// Delete review from pin
 exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { pinId, reviewId } = req.body;
-    const userId = req.user._id; // Ensure authenticated user
+    const { pinId, reviewId, userId } = req.body;
 
-    if (!pinId || !reviewId) {
-      return next(new ErrorHandler("Pin ID and Review ID are required", 400));
+    if (!pinId || !reviewId || !userId) {
+      return next(new ErrorHandler("All fields are required", 400));
     }
 
     const pin = await Pin.findById(pinId);
@@ -264,23 +264,27 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    // Find and remove the review only if the user owns it
-    const reviewIndex = pin.reviews.findIndex(
-      rev => rev._id.toString() === reviewId && rev.userId.toString() === userId
-    );
+    // Find the review to verify ownership
+    const review = pin.reviews.find((r) => r._id.toString() === reviewId);
 
-    if (reviewIndex === -1) {
-      return next(new ErrorHandler("Review not found or unauthorized", 403));
+    if (!review) {
+      return next(new ErrorHandler("Review not found", 404));
     }
 
-    pin.reviews.splice(reviewIndex, 1); // Remove review
-    pin.reviewCount = pin.reviews.length; // Update count
+    // Ensure user is the owner of the review
+    if (review.userId.toString() !== userId) {
+      return next(new ErrorHandler("Unauthorized: Cannot delete this review", 403));
+    }
 
-    // Recalculate average rating
+    // Remove the review
+    pin.reviews = pin.reviews.filter((r) => r._id.toString() !== reviewId);
+    pin.reviewCount = pin.reviews.length;
+
+    // Recalculate the average rating
     const totalRatings = pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0);
     pin.averageRating = pin.reviews.length > 0 ? totalRatings / pin.reviews.length : 0;
 
-    await pin.save();
+    await pin.save(); // Save the changes
 
     res.status(200).json({
       success: true,
