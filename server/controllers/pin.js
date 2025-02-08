@@ -154,10 +154,10 @@ exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
 // Add a review to a pin
 exports.addReview = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { pinId, reviewText, ratings } = req.body;
-    const userId = req.user._id;  // Get the userId from the logged-in user (from token)
+    const { pinId, reviewText, ratings, name, image } = req.body;
+    const userId = req.user._id;
 
-    if (!pinId || !reviewText || !ratings) {
+    if (!pinId || !reviewText || !ratings || !name || !image) {
       return next(new ErrorHandler("All fields are required", 400));
     }
 
@@ -167,7 +167,16 @@ exports.addReview = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    const review = { userId, reviewText, ratings, createdAt: new Date() };
+    const review = {
+      user: {
+        _id: userId,
+        name: name,
+        image: image
+      },
+      reviewText,
+      ratings,
+      createdAt: new Date()
+    };
 
     pin.reviews.push(review);
     pin.reviewCount = pin.reviews.length;
@@ -180,7 +189,7 @@ exports.addReview = catchAsyncErrors(async (req, res, next) => {
     if (pin.reviewCount >= 10 && pin.averageRating >= 4.5) {
       pin.isVerified = true;
     } else {
-      pin.isVerified = false;  // Reset to false if conditions are not met
+      pin.isVerified = false;
     }
 
     await pin.save();
