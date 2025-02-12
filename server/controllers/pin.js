@@ -59,16 +59,15 @@ exports.createPin = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-
-
 // Get all pins
 exports.getAllPins = catchAsyncErrors(async (req, res, next) => {
   try {
-    const pins = await Pin.find().sort({
-      createdAt: -1,
-    });
+    const pins = await Pin.find().sort({ createdAt: -1 }); // Fetch all pins sorted by creation date
 
-    res.status(200).json({ success: true, pins });
+    res.status(200).json({
+      success: true,
+      pins,
+    });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
@@ -125,7 +124,6 @@ exports.updatePinById = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
-
 
 // Delete pin by ID
 exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
@@ -201,8 +199,6 @@ exports.addReview = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-
-
 exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
   try {
     const { pinId, reviewId, userId, reviewText, ratings } = req.body;
@@ -247,9 +243,6 @@ exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
-
-
-
 
 exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
   try {
@@ -301,8 +294,6 @@ exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 500));
   }
 });
-
-
 
 exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
   try {
