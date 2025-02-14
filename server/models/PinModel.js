@@ -110,10 +110,18 @@ const pinSchema = new mongoose.Schema(
       saturday: { open: String, close: String },
       sunday: { open: String, close: String },
     },
-    visitors: {
-      type: [String],
-      default: [],
-    },
+    visitors: [
+      {
+        userId: {
+          type: String,
+          required: true,
+        },
+        created_at: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
