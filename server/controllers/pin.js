@@ -311,8 +311,8 @@ exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
     }
 
     // Prevent duplicate visitors
-    if (!pin.visitors.includes(userId)) {
-      pin.visitors.push(userId);
+    if (!pin.visitors.some(visitor => visitor.userId === userId)) {
+      pin.visitors.push({ userId, created_at: new Date() }); // Add userId and created_at
       await pin.save();
     }
 
