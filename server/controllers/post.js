@@ -109,6 +109,7 @@ exports.updateLikes = catchAsyncErrors(async (req, res, next) => {
               userId: req.user.id,
               userAvatar: req.user.avatar.url,
               postId,
+              created_at: new Date().toISOString(),
             },
           },
         }
