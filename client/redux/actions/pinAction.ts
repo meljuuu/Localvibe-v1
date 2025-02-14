@@ -14,9 +14,24 @@ export const createPinAction =
     longitude: number,
     contactInfo: {phone?: string; email?: string; website?: string},
     image: string,
+    operatingHours: {
+      monday: {open: string; close: string};
+      tuesday: {open: string; close: string} /*...*/;
+    }, // Correct field name
   ) =>
   async (dispatch: Dispatch<any>) => {
     try {
+      console.log('Creating pin with the following details:');
+      console.log('Created By:', createdBy);
+      console.log('Business Name:', businessName);
+      console.log('Description:', description);
+      console.log('Category:', category);
+      console.log('Latitude:', latitude);
+      console.log('Longitude:', longitude);
+      console.log('Contact Info:', contactInfo);
+      console.log('Image:', image);
+      console.log('Operating Hours:', operatingHours); // Correct field to log
+
       dispatch({
         type: 'pinCreateRequest',
       });
@@ -34,6 +49,7 @@ export const createPinAction =
           longitude,
           contactInfo,
           image,
+          operatingHours, // Send the correct operatingHours here
         },
         {
           headers: {
@@ -41,6 +57,7 @@ export const createPinAction =
           },
         },
       );
+
       dispatch({
         type: 'pinCreateSuccess',
         payload: data.pin,
@@ -49,6 +66,71 @@ export const createPinAction =
       dispatch({
         type: 'pinCreateFailed',
         payload: error.response.data.message,
+      });
+    }
+  };
+
+export const modifyPinAction =
+  (
+    pinId: string,
+    businessName: string,
+    description: string,
+    category: string,
+    latitude: number,
+    longitude: number,
+    contactInfo: {phone?: string; email?: string; website?: string},
+    image: string,
+    openingHours: string, // Add openingHours here
+  ) =>
+  async (dispatch: Dispatch<any>) => {
+    try {
+      dispatch({
+        type: 'pinModifyRequest',
+      });
+
+      const token = await AsyncStorage.getItem('token');
+      console.log('Token Retrieved:', token);
+
+      const requestData = {
+        businessName,
+        description,
+        category,
+        latitude,
+        longitude,
+        contactInfo,
+        image,
+        openingHours,
+      };
+
+      console.log('Sending Request to Update Pin:', requestData);
+
+      const {data} = await axios.put(
+        `${URI}/update-pin/${pinId}`,
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      console.log('Server Response:', data);
+
+      dispatch({
+        type: 'pinModifySuccess',
+        payload: data.pin,
+      });
+
+      console.log('Dispatch Success: Pin updated successfully');
+    } catch (error: any) {
+      console.error(
+        'Error Updating Pin:',
+        error.response?.data || error.message,
+      );
+
+      dispatch({
+        type: 'pinModifyFailed',
+        payload: error.response?.data?.message || 'Unknown error occurred',
       });
     }
   };
@@ -108,3 +190,263 @@ export const deletePinAction =
       });
     }
   };
+
+export const addReviewAction =
+  (
+    pinId: string,
+    reviewData: {
+      userId: string;
+      name: string;
+      image: string;
+      reviewText: string;
+      ratings: number;
+    },
+  ) =>
+  async (dispatch: Dispatch<any>) => {
+    try {
+      dispatch({
+        type: 'addReviewRequest',
+      });
+
+      // Validate required fields
+      if (!reviewData.name || !reviewData.image) {
+        throw new Error('User name and image are required');
+      }
+
+      // Log the data being sent to the server
+      console.log('Data being sent to add review:', {
+        pinId,
+        ...reviewData,
+      });
+
+      const token = await AsyncStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const {data} = await axios.post(
+        `${URI}/add-review`,
+        {
+          pinId,
+          userId: reviewData.userId,
+          name: reviewData.name,
+          image: reviewData.image,
+          reviewText: reviewData.reviewText,
+          ratings: reviewData.ratings,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      dispatch({
+        type: 'addReviewSuccess',
+        payload: data.pin,
+      });
+    } catch (error: any) {
+      console.error('Error in addReviewAction:', {
+        message: error.response?.data?.message || error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      dispatch({
+        type: 'addReviewFailed',
+        payload: error.response?.data?.message || error.message,
+      });
+    }
+  };
+
+export const modifyReviewAction =
+  (
+    pinId: string,
+    reviewId: string,
+    reviewData: {
+      userId: string;
+      name: string;
+      image: string;
+      reviewText: string;
+      ratings: number;
+    },
+  ) =>
+  async (dispatch: Dispatch<any>) => {
+    try {
+      dispatch({type: 'modifyReviewRequest'});
+
+      const token = await AsyncStorage.getItem('token');
+
+      const {data} = await axios.put(
+        `${URI}/modify-review`,
+        {
+          pinId,
+          reviewId,
+          userId: reviewData.userId, // Ensures correct userId is passed
+          reviewText: reviewData.reviewText,
+          ratings: reviewData.ratings,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      dispatch({
+        type: 'modifyReviewSuccess',
+        payload: data.pin, // Updated pin with modified review
+      });
+    } catch (error: any) {
+      console.error(
+        'Modify review error:',
+        error.response?.data || error.message,
+      );
+      dispatch({
+        type: 'modifyReviewFailed',
+        payload: error.response?.data?.message || 'An error occurred',
+      });
+    }
+  };
+
+
+
+// Delete Review
+export const deleteReviewAction =
+  (pinId: string, reviewId: string) => async (dispatch: Dispatch<any>) => {
+    try {
+      dispatch({type: 'deleteReviewRequest'});
+
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      console.log('Attempting to delete review:', {pinId, reviewId});
+
+      const {data} = await axios.delete(`${URI}/delete-review`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: {pinId, reviewId},
+      });
+
+      console.log('Delete review response:', data);
+
+      dispatch({
+        type: 'deleteReviewSuccess',
+        payload: data.pin,
+      });
+    } catch (error: any) {
+      console.error(
+        'Error during deleteReviewAction:',
+        error.response?.data?.message || error.message,
+      );
+      dispatch({
+        type: 'deleteReviewFailed',
+        payload:
+          error.response?.data?.message || 'An unexpected error occurred.',
+      });
+    }
+  };
+
+
+// Increment Visit Count
+
+// Add Visit Action
+export const addVisitorAction =
+  (pinId: string, userId: string) => async (dispatch: Dispatch<any>) => {
+    try {
+      console.log('Adding visitor with details:', {pinId, userId}); // Log inputs
+
+      dispatch({
+        type: 'addVisitorRequest',
+      });
+
+      const token = await AsyncStorage.getItem('token');
+      console.log('Retrieved token:', token); // Log token retrieval
+
+      const {data} = await axios.post(
+        `${URI}/add-visitor`,
+        {
+          pinId,
+          userId,
+          created_at: new Date().toISOString(), // Include created_at timestamp
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      console.log('Add visitor response:', data); // Log server response
+
+      dispatch({
+        type: 'addVisitorSuccess',
+        payload: {pinId, visitors: data.visitors}, // Updated visitors list
+      });
+    } catch (error: any) {
+      console.error(
+        'Error during addVisitorAction:',
+        error.response?.data?.message || error.message,
+      ); // Log error message
+      dispatch({
+        type: 'addVisitorFailed',
+        payload:
+          error.response?.data?.message || 'An unexpected error occurred.',
+      });
+    }
+  };
+// Get Pin by ID Action
+export const getPinByIdAction =
+  (pinId: string) => async (dispatch: Dispatch<any>) => {
+    try {
+      dispatch({
+        type: 'getPinByIdRequest',
+      });
+
+      const token = await AsyncStorage.getItem('token');
+
+      const {data} = await axios.get(`${URI}/get-pin/${pinId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      dispatch({
+        type: 'getPinByIdSuccess',
+        payload: data.pin,
+      });
+    } catch (error: any) {
+      dispatch({
+        type: 'getPinByIdFailed',
+        payload: error.response.data.message,
+      });
+    }
+  };
+
+// Action to fetch all pins
+export const fetchAllPinsAction = () => async (dispatch: Dispatch<any>) => {
+  try {
+    dispatch({ type: 'getAllPinsRequest' });
+
+    const token = await AsyncStorage.getItem('token');
+
+    const { data } = await axios.get(`${URI}/get-all-pins`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },  
+    });
+
+    dispatch({
+      type: 'getAllPinsSuccess',
+      payload: data.pins,
+    });
+  } catch (error: any) {
+    dispatch({
+      type: 'getAllPinsFailed',
+      payload: error.response?.data?.message || 'Failed to fetch pins',
+    });
+  }
+};
