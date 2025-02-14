@@ -30,6 +30,10 @@ const postSchema = new mongoose.Schema(
         userAvatar: {
           type: String,
         },
+        created_at: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
     replies: [
@@ -66,6 +70,10 @@ const postSchema = new mongoose.Schema(
             userAvatar: {
               type: String,
             },
+            created_at: {
+              type: Date,
+              default: Date.now,
+            },
           },
         ],
         reply: [
@@ -101,6 +109,10 @@ const postSchema = new mongoose.Schema(
                 },
                 userAvatar: {
                   type: String,
+                },
+                created_at: {
+                  type: Date,
+                  default: Date.now,
                 },
               },
             ],
