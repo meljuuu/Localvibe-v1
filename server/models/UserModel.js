@@ -19,6 +19,16 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please enter your email"],
       unique: true,
     },
+    isVerified:  {
+      type: Boolean,
+      default: false
+    },
+    
+    resetPasswordToken: String,
+    resetPasswordExpiresAt: String,
+    verificationToken: String,
+    verificationTokenExpiresAt: String,
+    
     accountType: {
       type: String,
       enum: ["admin", "personal", "business", "prembusiness"],
