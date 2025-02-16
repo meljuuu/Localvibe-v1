@@ -1,4 +1,4 @@
- const User = require("../models/UserModel");
+const User = require("../models/UserModel");
 const Post = require("../models/PostModel");
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
