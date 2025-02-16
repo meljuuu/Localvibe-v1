@@ -594,3 +594,20 @@ exports.getSentFriendRequests = catchAsyncErrors(async (req, res, next) => {
     next(new ErrorHandler(error.message, 500));
   }
 });
+
+
+// Get user by ID
+exports.getUserById = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return next(new ErrorHandler("User not found", 404));
+    }
+
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
+
