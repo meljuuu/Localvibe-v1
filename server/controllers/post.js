@@ -109,7 +109,6 @@ exports.updateLikes = catchAsyncErrors(async (req, res, next) => {
               userId: req.user.id,
               userAvatar: req.user.avatar.url,
               postId,
-              created_at: new Date().toISOString(),
             },
           },
         }
@@ -448,5 +447,77 @@ exports.deletePost = catchAsyncErrors(async (req, res, next) => {
   } catch (error) {
     console.log(error);
     return next(new ErrorHandler(error, 400));
+  }
+});
+
+// Add or Remove Shares
+exports.updateShares = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const postId = req.body.postId;
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return next(new ErrorHandler("Post not found", 404));
+    }
+
+    const isSharedBefore = post.shares.find(
+      (item) => item.userId === req.user.id
+    );
+
+    if (isSharedBefore) {
+      await Post.findByIdAndUpdate(postId, {
+        $pull: {
+          shares: {
+            userId: req.user.id,
+          },
+        },
+      });
+
+      if (req.user.id !== post.user._id) {
+        await Notification.deleteOne({
+          "creator._id": req.user.id,
+          userId: post.user._id,
+          type: "Share",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Share removed successfully",
+      });
+    } else {
+      await Post.updateOne(
+        { _id: postId },
+        {
+          $push: {
+            shares: {
+              name: req.user.name,
+              userName: req.user.userName,
+              userId: req.user.id,
+              userAvatar: req.user.avatar.url,
+              postId,
+            },
+          },
+        }
+      );
+
+      if (req.user.id !== post.user._id) {
+        await Notification.create({
+          creator: req.user,
+          type: "Share",
+          title: post.title ? post.title : "Shared your post",
+          userId: post.user._id,
+          postId: postId,
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Post shared successfully",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHandler(error.message, 400));
   }
 });
