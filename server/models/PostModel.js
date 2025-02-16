@@ -30,6 +30,22 @@ const postSchema = new mongoose.Schema(
         userAvatar: {
           type: String,
         },
+      },
+    ],
+    shares: [
+      {
+        name: {
+          type: String,
+        },
+        userName: {
+          type: String,
+        },
+        userId: {
+          type: String,
+        },
+        userAvatar: {
+          type: String,
+        },
         created_at: {
           type: Date,
           default: Date.now,
@@ -70,10 +86,6 @@ const postSchema = new mongoose.Schema(
             userAvatar: {
               type: String,
             },
-            created_at: {
-              type: Date,
-              default: Date.now,
-            },
           },
         ],
         reply: [
@@ -109,10 +121,6 @@ const postSchema = new mongoose.Schema(
                 },
                 userAvatar: {
                   type: String,
-                },
-                created_at: {
-                  type: Date,
-                  default: Date.now,
                 },
               },
             ],
