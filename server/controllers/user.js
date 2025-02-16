@@ -1,4 +1,4 @@
-const User = require("../models/UserModel");
+ const User = require("../models/UserModel");
 const Post = require("../models/PostModel");
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
@@ -65,55 +65,6 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
       success: false,
       message: error.message,
     });
-  }
-});
-
-// Register user
-exports.createUser = catchAsyncErrors(async (req, res, next) => {
-  try {
-    const { name, email, password, avatar, accountType } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: "All fields are required" });
-    }
-
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ success: false, message: "User already exists" });
-    }
-
-    let myCloud;
-    if (avatar) {
-      myCloud = await cloudinary.v2.uploader.upload(avatar, { folder: "avatars" });
-    }
-
-    const userNameWithoutSpace = name.replace(/\s/g, "");
-    const uniqueNumber = Math.floor(Math.random() * 1000);
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    const verificationTokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-
-    user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      accountType,
-      userName: userNameWithoutSpace + "#" + uniqueNumber,
-      avatar: avatar ? { public_id: myCloud.public_id, url: myCloud.secure_url } : null,
-      verificationToken,
-      verificationTokenExpiresAt,
-      isVerified: false,
-    });
-
-    // await sendVerificationEmail(user.email, verificationToken);
-
-    res.status(201).json({
-      success: true,
-      message: "User registered successfully. Please check your email to verify your account.",
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
   }
 });
 
