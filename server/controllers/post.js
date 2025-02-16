@@ -450,21 +450,20 @@ exports.deletePost = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-// Add or Remove Shares
+
+// add or remove shares
 exports.updateShares = catchAsyncErrors(async (req, res, next) => {
   try {
     const postId = req.body.postId;
-    const post = await Post.findById(postId);
 
-    if (!post) {
-      return next(new ErrorHandler("Post not found", 404));
-    }
+    const post = await Post.findById(postId);
 
     const isSharedBefore = post.shares.find(
       (item) => item.userId === req.user.id
     );
 
     if (isSharedBefore) {
+      // If shared before, remove the share
       await Post.findByIdAndUpdate(postId, {
         $pull: {
           shares: {
@@ -474,6 +473,7 @@ exports.updateShares = catchAsyncErrors(async (req, res, next) => {
       });
 
       if (req.user.id !== post.user._id) {
+        // Delete notification if shared post is not by the user
         await Notification.deleteOne({
           "creator._id": req.user.id,
           userId: post.user._id,
@@ -486,6 +486,7 @@ exports.updateShares = catchAsyncErrors(async (req, res, next) => {
         message: "Share removed successfully",
       });
     } else {
+      // If not shared before, add the share
       await Post.updateOne(
         { _id: postId },
         {
@@ -502,6 +503,7 @@ exports.updateShares = catchAsyncErrors(async (req, res, next) => {
       );
 
       if (req.user.id !== post.user._id) {
+        // Create notification for the user
         await Notification.create({
           creator: req.user,
           type: "Share",
@@ -513,7 +515,7 @@ exports.updateShares = catchAsyncErrors(async (req, res, next) => {
 
       res.status(200).json({
         success: true,
-        message: "Post shared successfully",
+        message: "Share added successfully",
       });
     }
   } catch (error) {
