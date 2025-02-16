@@ -30,6 +30,10 @@ const postSchema = new mongoose.Schema(
         userAvatar: {
           type: String,
         },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
     replies: [
