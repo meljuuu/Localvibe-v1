@@ -32,26 +32,6 @@ const postSchema = new mongoose.Schema(
         },
       },
     ],
-    shares: [
-      {
-        name: {
-          type: String,
-        },
-        userName: {
-          type: String,
-        },
-        userId: {
-          type: String,
-        },
-        userAvatar: {
-          type: String,
-        },
-        created_at: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
     replies: [
       {
         user: {
@@ -137,6 +117,26 @@ const postSchema = new mongoose.Schema(
         score: {
           type: Number,
           default: 0,
+        },
+      },
+    ],
+    shares: [
+      {
+        name: {
+          type: String,
+        },
+        userName: {
+          type: String,
+        },
+        userId: {
+          type: String,
+        },
+        userAvatar: {
+          type: String,
+        },
+        postId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Post",
         },
       },
     ],
