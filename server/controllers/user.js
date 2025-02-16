@@ -6,6 +6,8 @@ const sendToken = require("../utils/jwtToken.js");
 const cloudinary = require("cloudinary");
 const Notification = require("../models/NotificationModel");
 const express = require("express");
+const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
 
 exports.updateUserCoor = catchAsyncErrors(async (req, res, next) => {
   try {
