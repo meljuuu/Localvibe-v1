@@ -8,6 +8,7 @@ const {
   addReply,
   updateRepliesReplyLike,
   deletePost,
+  updateShares, // Add the sharePost controller
 } = require("../controllers/post");
 
 const { isAuthenticatedUser } = require("../middleware/auth");
@@ -33,5 +34,7 @@ router
   .put(isAuthenticatedUser, updateRepliesReplyLike);
 
 router.route("/delete-post/:id").delete(isAuthenticatedUser, deletePost);
+
+router.route("/update-share").put(isAuthenticatedUser, updateShares); // New route for sharing a post
 
 module.exports = router;
