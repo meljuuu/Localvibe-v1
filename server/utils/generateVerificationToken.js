@@ -1,35 +1,46 @@
 const crypto = require('crypto');
 
 const generateVerificationToken = () => {
-  // Generate a 6-digit numeric OTP for easier mobile input
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  // Generate verification token
+  const verificationToken = crypto.randomBytes(20).toString('hex');
   
-  // Generate a longer token for deep linking
-  const deepLinkToken = crypto.randomBytes(32).toString('hex');
-  
-  // Set expiry to 10 minutes for OTP and 24 hours for deep link
-  const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
-  const deepLinkExpiry = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-  
+  // Set expiry time to 24 hours from now
+  const verificationTokenExpiresAt = new Date(
+    Date.now() + 24 * 60 * 60 * 1000
+  ).toString();
+
   return {
-    otp,
-    otpExpiry,
-    deepLinkToken,
-    deepLinkExpiry
+    verificationToken,
+    verificationTokenExpiresAt
   };
 };
 
-// Add validation helpers
-const isTokenExpired = (expiryTime) => {
-  return Date.now() > expiryTime;
+// Helper to check if token is expired
+const isVerificationTokenExpired = (expiryTimeString) => {
+  const expiryTime = new Date(expiryTimeString);
+  return Date.now() > expiryTime.getTime();
 };
 
-const validateOTP = (inputOTP, storedOTP) => {
-  return inputOTP === storedOTP;
+// Helper to validate token
+const validateVerificationToken = async (User, token) => {
+  const user = await User.findOne({
+    verificationToken: token,
+    isVerified: false
+  });
+
+  if (!user) {
+    throw new Error('Invalid verification token');
+  }
+
+  if (isVerificationTokenExpired(user.verificationTokenExpiresAt)) {
+    throw new Error('Verification token has expired');
+  }
+
+  return user;
 };
 
 module.exports = {
   generateVerificationToken,
-  isTokenExpired,
-  validateOTP
+  isVerificationTokenExpired,
+  validateVerificationToken
 };
