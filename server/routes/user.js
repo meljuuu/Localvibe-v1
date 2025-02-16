@@ -31,7 +31,7 @@ router.route("/add-user").put(isAuthenticatedUser, followUnfollowUser);
 
 router.route("/get-notifications").get(isAuthenticatedUser, getNotification);
 
-router.route("/get-user-by-id/:id").get(isAuthenticatedUser, getUserById);
+router.route("/get-user/:id").get(isAuthenticatedUser, getUser);
 
 router.route("/update-avatar").put(isAuthenticatedUser, updateUserAvatar);
 
