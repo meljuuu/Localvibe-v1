@@ -13,7 +13,6 @@ const {
   updateUserCoor,
   updateInteractions,
   removeInteractions,
-  getUserById,
 } = require("../controllers/user");
 
 const { isAuthenticatedUser } = require("../middleware/auth");
@@ -31,8 +30,6 @@ router.route("/users").get(isAuthenticatedUser, getAllUsers);
 router.route("/add-user").put(isAuthenticatedUser, followUnfollowUser);
 
 router.route("/get-notifications").get(isAuthenticatedUser, getNotification);
-
-router.route("/get-user/:id").get(isAuthenticatedUser, getUser);
 
 router.route("/get-user-by-id/:id").get(isAuthenticatedUser, getUserById);
 
