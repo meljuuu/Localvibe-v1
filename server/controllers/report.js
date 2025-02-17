@@ -117,4 +117,4 @@ exports.deleteReportsByItem = catchAsyncErrors(async (req, res, next) => {
   } catch (error) {
     return next(new ErrorHandler(error.message, 500));
   }
-});
+}
