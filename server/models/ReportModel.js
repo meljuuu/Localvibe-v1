@@ -1,10 +1,5 @@
 const mongoose = require("mongoose");
 
-// Delete the model if it already exists
-if (mongoose.models.Report) {
-  delete mongoose.models.Report;
-}
-
 const reportSchema = new mongoose.Schema(
   {
     userId: {
@@ -21,14 +16,6 @@ const reportSchema = new mongoose.Schema(
     },
     reason: {
       type: String, // Reason why it was reported
-      required: true,
-    },
-    itemTitle: {
-      type: String, // Title of the reported item
-      required: true,
-    },
-    imageUrl: {
-      type: String, // URL of the reported item's image
       required: true,
     },
     reportDate: {
@@ -62,7 +49,4 @@ reportSchema.statics.incrementReportCount = async function (reportedItemId, item
   }
 };
 
-// Redefine the model
-const Report = mongoose.model("Report", reportSchema);
-
-module.exports = Report;
+  module.exports = mongoose.model("Report", reportSchema);
