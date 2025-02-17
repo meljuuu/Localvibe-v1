@@ -9,9 +9,9 @@ exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
     const { userId, reportedItemId, itemType, reason, reportTitle, reportImage } = req.body;
 
     // Validate required fields
-    if (!userId || !reportedItemId || !itemType || !reason || !reportTitle || !reportImage) {
-      return next(new ErrorHandler("All fields are required", 400));
-    }
+   if (!userId || !reportedItemId || !itemType || !reason || !reportTitle || !reportImage) {
+     return next(new ErrorHandler("All fields are required", 400));
+   }
 
     // Check if a report already exists for the same item and type
     const existingReport = await Report.findOne({ reportedItemId, itemType });
