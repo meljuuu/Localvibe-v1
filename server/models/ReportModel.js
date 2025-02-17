@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 
+// Delete the model if it already exists
+if (mongoose.models.Report) {
+  delete mongoose.models.Report;
+}
+
 const reportSchema = new mongoose.Schema(
   {
     userId: {
@@ -57,6 +62,7 @@ reportSchema.statics.incrementReportCount = async function (reportedItemId, item
   }
 };
 
-// Check if the model is already compiled before defining it
-const Report = mongoose.models.Report || mongoose.model("Report", reportSchema);
+// Redefine the model
+const Report = mongoose.model("Report", reportSchema);
+
 module.exports = Report;
