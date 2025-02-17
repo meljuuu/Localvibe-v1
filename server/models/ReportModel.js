@@ -14,7 +14,7 @@ const reportSchema = new mongoose.Schema(
       type: String, // 'post' or 'pin' to specify what is being reported
       required: true,
     },
-    reason: {
+    reason:
       type: String, // Reason why it was reported
       required: true,
     },
