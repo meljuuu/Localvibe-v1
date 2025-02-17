@@ -18,13 +18,13 @@ const reportSchema = new mongoose.Schema(
       type: String, // Reason why it was reported
       required: true,
     },
-    reportTitle: {
+     reportTitle: {
       type: String, // Title of the report
-      required: true,
+      required: true, // Ensure this field is required
     },
     reportImage: {
       type: String, // URL of the report image
-      required: true,
+      required: true, // Ensure this field is required
     },
     reportDate: {
       type: Date, // The date and time when it was reported
