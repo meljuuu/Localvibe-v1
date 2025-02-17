@@ -49,4 +49,5 @@ reportSchema.statics.incrementReportCount = async function (reportedItemId, item
   }
 };
 
-module.exports = mongoose.model("Report", reportSchema);
+// Prevent overwriting of the model
+module.exports = mongoose.models.Report || mongoose.model("Report", reportSchema);
