@@ -31,6 +31,7 @@ exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
         reason,
         reportTitle,
         reportImage,
+        reportDate: new Date(),
       });
 
       return res.status(201).json({
