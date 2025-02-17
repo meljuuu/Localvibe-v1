@@ -18,6 +18,14 @@ const reportSchema = new mongoose.Schema(
       type: String, // Reason why it was reported
       required: true,
     },
+    itemTitle: {
+      type: String, // Title of the reported item
+      required: true,
+    },
+    imageUrl: {
+      type: String, // URL of the reported item's image
+      required: true,
+    },
     reportDate: {
       type: Date, // The date and time when it was reported
       default: Date.now,
