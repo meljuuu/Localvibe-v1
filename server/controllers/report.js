@@ -5,10 +5,10 @@ const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 // Create or increment a report
 exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { userId, reportedItemId, itemType, reason } = req.body;
+    const { userId, reportedItemId, itemType, reason, itemTitle, imageUrl } = req.body;
 
     // Validate required fields
-    if (!userId || !reportedItemId || !itemType || !reason) {
+    if (!userId || !reportedItemId || !itemType || !reason || !itemTitle || !imageUrl) {
       return next(new ErrorHandler("All fields are required", 400));
     }
 
@@ -29,6 +29,8 @@ exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
         reportedItemId,
         itemType,
         reason,
+        itemTitle,
+        imageUrl,
       });
 
       return res.status(201).json({
