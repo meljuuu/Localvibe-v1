@@ -6,13 +6,10 @@ const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 // Create or increment a report
 exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
   try {
-    console.log('Incoming request body:', req.body); // Log the incoming request body
-
     const { userId, reportedItemId, itemType, reason, reportTitle, reportImage } = req.body;
 
     // Validate required fields
     if (!userId || !reportedItemId || !itemType || !reason || !reportTitle || !reportImage) {
-      console.error('Validation error: All fields are required'); // Log validation error
       return next(new ErrorHandler("All fields are required", 400));
     }
 
@@ -44,7 +41,6 @@ exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error('Error in createOrUpdateReport:', error.message); // Log the error message
     return next(new ErrorHandler(error.message, 500));
   }
 });
