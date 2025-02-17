@@ -40,7 +40,8 @@ exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
       });
     }
   } catch (error) {
-    return next(new ErrorHandler(error.message, 500));
+    console.error('Error in createOrUpdateReport:', error); // Log the error for debugging
+    return next(new ErrorHandler(error.message || "Internal Server Error", 500));
   }
 });
 
