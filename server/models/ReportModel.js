@@ -49,4 +49,6 @@ reportSchema.statics.incrementReportCount = async function (reportedItemId, item
   }
 };
 
-module.exports = mongoose.model("Report", reportSchema);
+// Check if the model is already compiled before defining it
+const Report = mongoose.models.Report || mongoose.model("Report", reportSchema);
+module.exports = Report;
