@@ -1,129 +1,60 @@
 const mongoose = require("mongoose");
 
-const pinSchema = new mongoose.Schema(
+const reportSchema = new mongoose.Schema(
   {
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    userId: {
+      type: String, // ID of the user reporting the post or pin
       required: true,
     },
-    businessName: {
-      type: String,
+    reportedItemId: {
+      type: String, // Could be postId or pinId, used to store the ID of the reported item
       required: true,
     },
-    description: {
-      type: String,
+    itemType: {
+      type: String, // 'post' or 'pin' to specify what is being reported
       required: true,
     },
-    category: {
-      type: String,
+    reason: {
+      type: String, // Reason why it was reported
       required: true,
     },
-    latitude: {
-      type: Number,
+    reportTitle: {
+      type: String, // Title of the report
       required: true,
     },
-    longitude: {
-      type: Number,
+    reportImage: {
+      type: String, // URL of the report image
       required: true,
     },
-    contactInfo: {
-      phone: {
-        type: String,
-        default: null,
-      },
-      email: {
-        type: String,
-        default: null,
-      },
-      website: {
-        type: String,
-        default: null,
-      },
+    reportDate: {
+      type: Date, // The date and time when it was reported
+      default: Date.now,
     },
-    image: {
-      public_id: {
-        type: String,
-        default: null,
-      },
-      url: {
-        type: String,
-        default: null,
-      },
+    reportCount: {
+      type: Number, // Keeps track of how many people have reported the same post or pin
+      default: 1, // The initial report will be counted as 1
     },
-    averageRating: {
-      type: Number,
-      default: 0,
-    },
-    reviewCount: {
-      type: Number,
-      default: 0,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    amenities: {
-      type: [String],
-      default: [],
-    },
-    reviews: [
-      {
-        pinId: {
-          type: String,
-          required: true,
-        },
-        userId: {
-          type: String,
-          required: true,
-        },
-        name: {
-          type: String, // ✅ Now a direct field, not inside `user`
-          required: true,
-        },
-        image: {
-          type: String, // ✅ Now a direct field, not inside `user`
-          required: true,
-        },
-        reviewText: {
-          type: String,
-          required: true,
-        },
-        ratings: {
-          type: Number,
-          required: true,
-          min: 1,
-          max: 5,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-    operatingHours: {
-      monday: { open: String, close: String },
-      tuesday: { open: String, close: String },
-      wednesday: { open: String, close: String },
-      thursday: { open: String, close: String },
-      friday: { open: String, close: String },
-      saturday: { open: String, close: String },
-      sunday: { open: String, close: String },
-    },
-    visitors: [
-      {
-        userId: {
-          type: String,
-          required: true,
-        },
-        created_at: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
   },
-  { timestamps: true }
+  { timestamps: true } // Automatically adds `createdAt` and `updatedAt` fields
 );
 
-module.exports = mongoose.model("Pin", pinSchema);
+reportSchema.index({ reportedItemId: 1, itemType: 1 }); // Index to handle frequent searches by reported item
+
+// Method to increment the report count when another report is made for the same item
+reportSchema.statics.incrementReportCount = async function (reportedItemId, itemType) {
+  const report = await this.findOne({ reportedItemId, itemType });
+
+  if (report) {
+    report.reportCount += 1;
+    await report.save();
+  } else {
+    // If no report exists, create a new report record
+    await this.create({
+      reportedItemId,
+      itemType,
+      reportCount: 1,
+    });
+  }
+};
+
+module.exports = mongoose.model("Report", reportSchema);
