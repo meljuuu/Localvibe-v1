@@ -1,60 +1,55 @@
 const mongoose = require("mongoose");
 
-const reportSchema = new mongoose.Schema(
+const pinSchema = new mongoose.Schema(
   {
-    userId: {
-      type: String, // ID of the user reporting the post or pin
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
-    reportedItemId: {
-      type: String, // Could be postId or pinId, used to store the ID of the reported item
+    // Business name
+    businessName: {
+      type: String,
       required: true,
     },
-    itemType: {
-      type: String, // 'post' or 'pin' to specify what is being reported
+    // Business description
+    description: {
+      type: String,
       required: true,
     },
-    reason: {
-      type: String, // Reason why it was reported
+    // Business category (e.g., restaurant, salon, store, etc.)
+    category: {
+      type: String,
       required: true,
     },
-    reportTitle: {
-      type: String, // Title of the report
-      required: true,
+    // Latitude and longitude coordinates for the pin location
+    latitude: {
+      type: Number,
+      default: null,
     },
-    reportImage: {
-      type: String, // URL of the report image
-      required: true,
+
+    longitude: {
+      type: Number,
+      default: null,
     },
-    reportDate: {
-      type: Date, // The date and time when it was reported
-      default: Date.now,
+    // Business contact information (optional)
+    contactInfo: {
+      phone: String,
+      email: String,
+      website: String,
     },
-    reportCount: {
-      type: Number, // Keeps track of how many people have reported the same post or pin
-      default: 1, // The initial report will be counted as 1
+    // Images of the business (optional)
+    image: {
+      public_id: {
+        type: String,
+      },
+      url: {
+        type: String,
+      },
     },
+    // Timestamps for when the pin was created and updated
   },
-  { timestamps: true } // Automatically adds `createdAt` and `updatedAt` fields
+  { timestamps: true }
 );
 
-reportSchema.index({ reportedItemId: 1, itemType: 1 }); // Index to handle frequent searches by reported item
-
-// Method to increment the report count when another report is made for the same item
-reportSchema.statics.incrementReportCount = async function (reportedItemId, itemType) {
-  const report = await this.findOne({ reportedItemId, itemType });
-
-  if (report) {
-    report.reportCount += 1;
-    await report.save();
-  } else {
-    // If no report exists, create a new report record
-    await this.create({
-      reportedItemId,
-      itemType,
-      reportCount: 1,
-    });
-  }
-};
-
-module.exports = mongoose.model("Report", reportSchema);
+module.exports = mongoose.model("Pin", pinSchema);
