@@ -58,7 +58,7 @@ const SignupScreen = ({navigation, route}: Props) => {
     try {
       await registerUser(name, email, password, avatar, accountType)(dispatch);
       Alert.alert('Registration Successful!');
-      navigation.navigate('/verify-email');
+      navigation.navigate('VerifyEmail');
     } catch (error) {
       console.error('An error occurred:', error);
       Alert.alert('Error', 'An error occurred while processing your request.');
@@ -72,7 +72,7 @@ const SignupScreen = ({navigation, route}: Props) => {
     }
     if (isAuthenticated) {
       Alert.alert('Account Creation Successful!');
-      navigation.navigate('Home');
+      navigation.navigate('VerifyEmail');
     }
   }, [error, isAuthenticated]);
 

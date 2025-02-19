@@ -10,8 +10,8 @@ import {
   Platform,
   Dimensions,
   Modal,
-  Button,
   TextInput,
+  Alert,
   Linking,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
@@ -41,46 +41,44 @@ const MAX_HEIGHT = 350;
 
 const BusinessPinScreen = ({route, navigation}: Props) => {
   const [localPins, setLocalPins] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [averageRating, setAverageRating] = useState<number>(0); // To store the average rating
   const {pins} = route.params;
   const [showModal, setShowModal] = useState(!pins.isVerified); // Show modal if not verified
-
-  // Fetch pins from AsyncStorage
-  const fetchPins = async () => {
-    const token = await AsyncStorage.getItem('token');
-    try {
-      const response = await fetch(`${URI}/get-all-pins`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-
-      // Log the fetched pins
-      console.log('Fetched pins:', data.pins);
-
-      setLocalPins(data.pins); // Update local state with fetched pins
-    } catch (error) {
-      console.error('Error fetching pins:', error);
-    }
-  };
+  const localPin = localPins.find((pin: any) => pin._id === pins._id);
 
   useEffect(() => {
+    const fetchPins = async () => {
+      const token = await AsyncStorage.getItem('token');
+      try {
+        const response = await fetch(`${URI}/get-all-pins`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+
+        setLocalPins(data.pins); // Update local state with fetched pins
+      } catch (error) {
+        console.error('Error fetching pins:', error);
+      }
+    };
+
     fetchPins(); // Fetch pins initially
 
     // Set up polling to fetch pins every 5 seconds
-    const interval = setInterval(() => {
-      fetchPins();
-    }, 5000);
-
-    // Clear the interval on component unmount
-    return () => {
-      clearInterval(interval);
-      console.log('Polling interval cleared.');
+    const pollPins = () => {
+      fetchPins(); // Always fetch pins
+      setTimeout(pollPins, 5000); // Schedule the next fetch
     };
-  }, []);
+
+    pollPins(); // Start polling
+
+    // Clear the timeout on component unmount
+    return () => {
+      console.log('Polling cleared.');
+    };
+  }, []); // Removed isEditing as a dependency
 
   const handleMapPress = (e: any) => {
     const {latitude, longitude} = e.nativeEvent.coordinate;
@@ -90,14 +88,10 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
   useEffect(() => {
     // Log localPins and pins to ensure they are available
-    console.log('localPins:', localPins);
-    console.log('pins:', pins);
 
     // Ensure localPins and pins are available
     if (localPins.length > 0 && pins) {
       // Find the localPin in localPins that matches pins._id
-      const localPin = localPins.find((pin: any) => pin._id === pins._id);
-      console.log('localPin:', localPin);
 
       if (localPin) {
         // Set the description and contact info
@@ -106,11 +100,9 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
           phone: localPin.contactInfo?.phone || 'N/A',
           email: localPin.contactInfo?.email || 'N/A',
         });
-
         // Log the visitors array and update visitor count
         const visitorCount = localPin.visitors ? localPin.visitors.length : 0;
         setVisitorLength(visitorCount);
-        console.log(visitorCount);
 
         // Retrieve the image URL from the localPin object
         const imageUrl = localPin.image
@@ -136,12 +128,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
         } else {
           setAverageRating(0);
         }
-
-        // Fetch and set latitude and longitude
-        const latitude = localPin.latitude || 14;
-        const longitude = localPin.longitude || 120;
-        setLatitude(latitude);
-        setLongitude(longitude);
       } else {
         console.log('Pin not found in local storage');
       }
@@ -214,8 +200,20 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
   // State for the follow button (toggle between follow/unfollow)
   const [isFollowed, setIsFollowed] = useState(false);
-  const [latitude, setLatitude] = useState<string | number | null>(null);
-  const [longitude, setLongitude] = useState<string | number | null>(null);
+  const [latitude, setLatitude] = useState<string | number | null>(
+    pins.latitude,
+  );
+  const [longitude, setLongitude] = useState<string | number | null>(
+    pins.longitude,
+  );
+
+  // Update latitude and longitude whenever pins change
+  useEffect(() => {
+    if (pins) {
+      setLatitude(pins.latitude);
+      setLongitude(pins.longitude);
+    }
+  }, [pins]);
 
   // Handle follow button press
   const handleFollowPress = () => {
@@ -241,9 +239,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
     setSelectedImage(null); // Close the modal by resetting the selected image
   };
 
-  const [editReviewText, setEditReviewText] = useState(''); // Store the review text when editing
-  const [editReviewRating, setEditReviewRating] = useState(0); // Store the rating for editing
-
   // If a review is selected for editing, pre-fill the fields
 
   const [reviews, setReviews] = useState([]);
@@ -260,29 +255,28 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
   const [editablePhone, setEditablePhone] = useState(
     pinContactInfo.phone || '',
   );
-  const [editableEmail, setEditableEmail] = useState(
-    pinContactInfo.email || '',
-  );
-  const handleEditPress = () => {
-    setIsEditing(true);
-  };
+
+  useEffect(() => {
+    setEditableDescription(pinDescription || '');
+    setEditablePhone(pinContactInfo.phone || '');
+  }, [pinDescription, pinContactInfo]);
+
   const handleSavePin = async () => {
     try {
       const pinsData = await AsyncStorage.getItem('pins');
       if (pinsData) {
         const parsedPins = JSON.parse(pinsData);
-
         const updatedPins = {
           ...parsedPins,
           pins: parsedPins.pins.map((pin: any) =>
             pin._id === pins._id
               ? {
                   ...pin,
-                  image: editedImage,
-                  description: editableDescription,
+                  image: editedImage || localPin.image.url,
+                  description: editableDescription || localPin.description,
                   contactInfo: {
-                    phone: editablePhone,
-                    email: editableEmail,
+                    phone: editablePhone || localPin.contactInfo.phone,
+                    email: pins.contactInfo.email || localPin.contactInfo.email,
                   },
                   latitude,
                   longitude,
@@ -292,20 +286,22 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
         };
 
         await AsyncStorage.setItem('pins', JSON.stringify(updatedPins));
-        console.log('Pin successfully updated.');
 
         // Dispatch to update backend
         dispatch(
           modifyPinAction(
             pins._id,
             pins.businessName,
-            editableDescription,
+            editableDescription || localPin.description,
             pins.category,
             latitude,
             longitude,
-            {phone: editablePhone, email: pins.email},
-            editedImage,
-            pins.openingHours || 'N/A',
+            {
+              phone: editablePhone || localPin.contactInfo.phone,
+              email: localPin.email,
+            },
+            editedImage || localPin.image.url,
+            localPin.openingHours || 'N/A',
           ),
         );
 
@@ -319,9 +315,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
   const saveReviewsToAsyncStorage = async (updatedReviews: any[]) => {
     try {
-      console.log('Updating reviews for pin ID:', pins._id);
-      console.log('Updated reviews:', updatedReviews);
-
       // Fetch the current pins from AsyncStorage
       const pinsData = await AsyncStorage.getItem('pins');
       if (pinsData) {
@@ -338,11 +331,9 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
           // Save the updated pins back to AsyncStorage
           await AsyncStorage.setItem('pins', JSON.stringify(updatedPins));
-          console.log('Reviews successfully saved to AsyncStorage');
 
           // Update the state with the new reviews
           setReviews(updatedReviews);
-          console.log('State updated with new reviews:', updatedReviews);
 
           // Recalculate the average rating
           const totalRatings = updatedReviews.reduce(
@@ -416,8 +407,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
           }
         : review,
     );
-
-    console.log('Updated Reviews:', updatedReviews);
 
     try {
       await dispatch(
@@ -503,12 +492,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
   // Handle report confirmation
   const handleConfirmReport = () => {
     if (selectedReason) {
-      console.log('Selected Reason:', selectedReason); // Log the selected reason
-      console.log('Reporting User ID:', user._id); // Log the reporting user's ID
-      console.log('Reported Item ID:', pins._id); // Log the ID of the reported post
-      console.log('Report Type: post'); // Log the assumed type
-      console.log('Reason:', selectedReason);
-
       // Dispatch the report action
       dispatch(
         createOrUpdateReportAction(
@@ -518,8 +501,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
           selectedReason, // Selected reason for the report
         ),
       );
-
-      console.log('Report dispatched successfully.');
 
       setOpenModal(false); // Close the modal
       setSelectedReason(null); // Reset the selected reason
@@ -534,10 +515,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
     setSelectedReason(null); // Reset the selected reason
   };
 
-  const [visitorCounts, setVisitorCounts] = useState<{[key: string]: number}>(
-    {},
-  );
-
   useEffect(() => {
     if (
       localPins.length > 0 &&
@@ -548,7 +525,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
       const localPin = localPins.pins.find((pin: any) => pin._id === pins._id);
       if (localPin) {
         const visitorData = localPin.visitors || [];
-        console.log('Visitor Data:', visitorData); // Log visitor data
         storeVisitorData(visitorData); // Store visit data
       } else {
         console.log('No matching pin found in localPins');
@@ -564,7 +540,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
     const diff = date.getTime() - startDate.getTime();
     const oneWeek = 1000 * 60 * 60 * 24 * 7;
     const weekNumber = Math.floor(diff / oneWeek);
-    console.log('Week Number:', weekNumber); // Log calculated week number
     return weekNumber;
   };
 
@@ -637,30 +612,30 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
   const hasUserReviewed = reviews.some(review => review.userId === user._id);
   const safeAverageRating = isNaN(averageRating) ? 0.0 : averageRating;
 
-  const getWeeklyVisitorCounts = (localPins: any[]) => {
+  const getWeeklyVisitorCounts = (localPin: any) => {
     const currentDate = new Date();
     const weekCounts = Array(7).fill(0); // Array to hold counts for the last 7 days
 
-    localPins.forEach(pin => {
-      if (Array.isArray(pin.visitors)) {
-        pin.visitors.forEach(visitor => {
-          const visitorDate = new Date(visitor.created_at);
-          const dayDifference = Math.floor(
-            (currentDate.getTime() - visitorDate.getTime()) /
-              (1000 * 3600 * 24),
-          );
+    if (localPin && Array.isArray(localPin.visitors)) {
+      localPin.visitors.forEach(visitor => {
+        const visitorDate = new Date(visitor.created_at);
+        const dayDifference = Math.floor(
+          (currentDate.getTime() - visitorDate.getTime()) / (1000 * 3600 * 24),
+        );
 
-          if (dayDifference >= 0 && dayDifference < 7) {
-            weekCounts[dayDifference] += 1; // Increment the count for the corresponding day
-          }
-        });
-      }
-    });
+        if (dayDifference >= 0 && dayDifference < 7) {
+          weekCounts[dayDifference] += 1; // Increment the count for the corresponding day
+        }
+      });
+    } else {
+      console.warn(`No visitors found for local pin ID: ${localPin?._id}`); // Log if no visitors
+    }
 
     return weekCounts.reverse(); // Reverse to show the most recent week first
   };
 
-  const weeklyVisitorCounts = getWeeklyVisitorCounts(localPins);
+  // Call the function with the localPin
+  const weeklyVisitorCounts = getWeeklyVisitorCounts(localPin);
 
   const getWeeklyLikesAndReplies = (postData: any[]) => {
     const currentDate = new Date();
@@ -668,16 +643,14 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
     const repliesCounts = Array(7).fill(0); // Array to hold counts for replies
 
     postData.forEach(post => {
-      // Log the likes and replies for debugging
-      console.log('Post ID:', post._id);
-      console.log('Likes:', post.likes);
-      console.log('Replies:', post.replies);
-
       // Process likes
       if (Array.isArray(post.likes)) {
         post.likes.forEach(like => {
-          const likeDate = new Date(like.created_at); // Use created_at
-          const dayDifference = Math.floor((currentDate.getTime() - likeDate.getTime()) / (1000 * 3600 * 24));
+          // Ensure you access the correct property for the like's creation date
+          const likeDate = new Date(like.created_at || like.createdAt); // Use created_at or createdAt
+          const dayDifference = Math.floor(
+            (currentDate.getTime() - likeDate.getTime()) / (1000 * 3600 * 24),
+          );
 
           if (dayDifference >= 0 && dayDifference < 7) {
             weekCounts[dayDifference] += 1; // Increment the count for likes
@@ -689,7 +662,9 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
       if (Array.isArray(post.replies)) {
         post.replies.forEach(reply => {
           const replyDate = new Date(reply.createdAt); // Use createdAt
-          const dayDifference = Math.floor((currentDate.getTime() - replyDate.getTime()) / (1000 * 3600 * 24));
+          const dayDifference = Math.floor(
+            (currentDate.getTime() - replyDate.getTime()) / (1000 * 3600 * 24),
+          );
 
           if (dayDifference >= 0 && dayDifference < 7) {
             repliesCounts[dayDifference] += 1; // Increment the count for replies
@@ -704,19 +679,19 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
     };
   };
 
-  const result = getWeeklyLikesAndReplies(postData);
-  console.log('getWeeklyLikesAndReplies Output:', result);
+  // Function to open the modal and set isEditing to true
+  const openModals = () => {
+    setIsEditing(true); // Set isEditing to true when opening the modal
+  };
+
+  // Function to close the modal and set isEditing to false
+  const closeModals = () => {
+    setIsEditing(false); // Set isEditing to false when closing the modal
+  };
+
   // Inside your component, after calculating visitor counts
-  const { likesData = [], repliesData = [] } = getWeeklyLikesAndReplies(postData);
+  const {likesData = [], repliesData = []} = getWeeklyLikesAndReplies(postData);
 
-  
-
-  // Log likesData and repliesData for debugging
-  console.log('Likes Data:', likesData);
-  console.log('Replies Data:', repliesData);
-
-  const safeRepliesData = Array.isArray(repliesData) ? repliesData : [];
-  const safeLikesData = Array.isArray(likesData) ? likesData : [];
   return (
     <View style={styles.container}>
       {/* Set the StatusBar to be translucent and fully transparent */}
@@ -750,71 +725,85 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
               animationType="slide"
               transparent={true}
               onRequestClose={() => setIsEditing(false)}>
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
-                }}>
-                <View
-                  style={{
-                    backgroundColor: '#fff',
-                    padding: 20,
-                    borderRadius: 10,
-                    width: '80%',
-                    maxWidth: 400,
-                  }}>
+              <View style={styles.modalContainer}>
+                <View style={styles.modal}>
+                  <View style={styles.textContainer}>
+                    <Text style={styles.editText}>Edit Business Details</Text>
+                  </View>
+                  <Text style={styles.textTitle}>Cover Photo:</Text>
+
                   <TouchableOpacity onPress={uploadImage}>
                     <Image
                       source={{
                         uri: editedImage || pins.image?.url, // Use editedImage or fallback to original image.url
                       }}
-                      style={styles.image}
+                      style={styles.changeImage}
                     />
                   </TouchableOpacity>
 
+                  <Text style={styles.textTitle}>Location:</Text>
+
                   {/* Map View inside the modal */}
-                  <MapView
-                    provider={PROVIDER_GOOGLE}
-                    style={{width: '100%', height: 300}} // Adjust the height for the map
-                    initialRegion={{
-                      latitude: latitude,
-                      longitude: longitude,
-                      latitudeDelta: 0.005,
-                      longitudeDelta: 0.005,
-                    }}
-                    onPress={handleMapPress} // Handle map press to update marker position
-                  >
-                    <Marker
-                      coordinate={{
+                  <View
+                    style={{
+                      width: '100%',
+                      height: 200,
+                      borderWidth: 2,
+                      borderColor: '#017E5E',
+                      borderRadius: 10,
+                      overflow: 'hidden',
+                    }}>
+                    <MapView
+                      provider={PROVIDER_GOOGLE}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                      }}
+                      initialRegion={{
                         latitude: latitude,
                         longitude: longitude,
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
                       }}
-                      draggable
-                      onDragEnd={e => {
-                        const {latitude: newLat, longitude: newLng} =
-                          e.nativeEvent.coordinate;
-                        setLatitude(newLat); // Update latitude when dragged
-                        setLongitude(newLng); // Update longitude when dragged
-                        console.log('New Coordinates:', newLat, newLng);
-                      }}
-                    />
-                  </MapView>
+                      onPress={handleMapPress}>
+                      <Marker
+                        coordinate={{
+                          latitude: latitude,
+                          longitude: longitude,
+                        }}
+                        draggable
+                        onDragEnd={e => {
+                          const {latitude: newLat, longitude: newLng} =
+                            e.nativeEvent.coordinate;
+                          setLatitude(newLat);
+                          setLongitude(newLng);
+                        }}
+                      />
+                    </MapView>
+                  </View>
 
                   {/* Form Inputs */}
+
+                  <Text style={styles.textTitle}>Description:</Text>
                   <TextInput
-                    defaultValue={editableDescription || pinDescription}
+                    defaultValue={pins.description} // Use value instead of defaultValue
                     onChangeText={setEditableDescription}
+                    multiline={true}
+                    numberOfLines={4}
                     placeholder="Description"
-                    style={{borderWidth: 1, margin: 5, padding: 5}}
+                    style={styles.descriptionInput}
                   />
+
+                  <Text style={styles.textTitle}>Phone Number:</Text>
+
                   <TextInput
-                    defaultValue={editablePhone || pinContactInfo.phone}
+                    defaultValue={pins.contactInfo.phone} // Use value instead of defaultValue
                     onChangeText={setEditablePhone}
                     placeholder="Phone"
-                    style={{borderWidth: 1, margin: 5, padding: 5}}
+                    style={styles.descriptionInput}
                     keyboardType="phone-pad"
+                    maxLength={15}
+                    textContentType="telephoneNumber"
                   />
 
                   {/* Save and Cancel buttons */}
@@ -824,7 +813,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                       justifyContent: 'space-between',
                     }}>
                     <TouchableOpacity
-                      onPress={handleSavePin} // Handle save functionality
+                      onPress={handleSavePin}
                       style={{
                         padding: 10,
                         backgroundColor: 'green',
@@ -833,7 +822,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                       <Text style={{color: 'white'}}>Save</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => setIsEditing(false)} // Close the modal
+                      onPress={closeModals}
                       style={{
                         padding: 10,
                         backgroundColor: 'red',
@@ -848,24 +837,22 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
             {/* Button to Open Modal */}
             {user._id === pins.createdBy ? (
-              // Edit Button
-              <TouchableOpacity onPress={() => setIsEditing(true)}>
+              <TouchableOpacity onPress={openModals}>
                 <Image
                   style={styles.editImage}
                   source={require('../assets/editImage.png')}
                 />
               </TouchableOpacity>
             ) : (
-              // Report Button
-              <TouchableOpacity onPress={() => setOpenModal(true)}>
+              <TouchableOpacity onPress={openModals}>
                 <Image
                   style={styles.editImage}
-                  source={require('../assets/report.png')} // Replace with the appropriate report image
+                  source={require('../assets/report.png')}
                 />
               </TouchableOpacity>
             )}
             {openModal && (
-              <View style={styles.modalContainer}>
+              <View>
                 <Modal
                   animationType="fade"
                   transparent={true}
@@ -949,8 +936,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                     visible={showModal}
                     transparent={true}
                     animationType="slide"
-                    onRequestClose={() => setShowModal(false)} // Handle hardware back button on Android
-                  >
+                    onRequestClose={() => setShowModal(false)}>
                     <View style={styles.modalOverlay}>
                       <View style={styles.modalContent2}>
                         <Image
@@ -965,8 +951,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                         </Text>
                         <TouchableOpacity
                           style={styles.continueButton}
-                          onPress={() => setShowModal(false)} // Close modal
-                        >
+                          onPress={() => setShowModal(false)}>
                           <Text style={styles.buttonText}>Continue</Text>
                         </TouchableOpacity>
                       </View>
@@ -991,7 +976,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
               <View style={styles.followButtons}>
                 <TouchableOpacity onPress={handleFollowPress}>
-                  {/* Apply dynamic styles based on the isFollowed state */}
                   <Text
                     style={
                       isFollowed
@@ -1040,7 +1024,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
             </TouchableOpacity>
           </View>
 
-          {/* Conditional rendering based on the activeTab */}
           {activeTab === 'Details' && (
             <View>
               <Text style={styles.description}>
@@ -1048,7 +1031,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   {editableDescription ? editableDescription : pinDescription}
                 </Text>
               </Text>
-              {/* Additional Details content */}
 
               <View style={[styles.section, {height: 250}]}>
                 <View style={styles.contactInfoContainer}>
@@ -1095,7 +1077,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
               {postData.length === 0 && (
                 <Text style={styles.noPostText}>No Post yet!</Text>
               )}
-              {/* Add Reviews content here */}
             </View>
           )}
           {activeTab === 'Media' && (
@@ -1114,7 +1095,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   ) : null,
                 )
               ) : (
-                <Text style={styles.noMediaText}>No Media yet!</Text>
+                <Text style={styles.noPostText}>No Media yet!</Text>
               )}
 
               <Modal
@@ -1245,7 +1226,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                           </View>
                         </View>
 
-                        {/* Options Icon */}
                         <View style={styles.dayContainer}>
                           <TouchableOpacity
                             onPress={() => toggleOptions(review._id)}>
@@ -1263,23 +1243,20 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
                       <Text style={styles.reviewText}>{review.reviewText}</Text>
 
-                      {/* Show buttons only when options are visible */}
                       {visibleOptions === review._id &&
                         review.userId === user._id && (
                           <View style={styles.buttonGroup}>
-                            {/* Modify Button */}
                             <TouchableOpacity
                               style={styles.modifyButton}
                               onPress={() => {
                                 setNewReview(review.reviewText);
                                 setNewRating(review.ratings.toString());
                                 setSelectedReviewId(review._id);
-                                setVisibleOptions(null); // Hide Modify/Delete buttons once Modify is clicked
+                                setVisibleOptions(null);
                               }}>
                               <Text style={styles.buttonText}>Modify</Text>
                             </TouchableOpacity>
 
-                            {/* Delete Button */}
                             <TouchableOpacity
                               style={styles.deleteButton}
                               onPress={() => handleDeleteReview(review._id)}>
@@ -1293,7 +1270,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   <Text style={styles.noReviewsText}>No reviews available</Text>
                 )}
 
-                {/* Conditionally show the review input when the user has not reviewed or when modifying */}
                 {!hasUserReviewed && !selectedReviewId && (
                   <View style={styles.inputContainer}>
                     <TextInput
@@ -1328,7 +1304,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   </View>
                 )}
 
-                {/* Show the review input when modifying a review */}
                 {selectedReviewId && (
                   <View style={styles.inputContainer}>
                     <TextInput
@@ -1379,14 +1354,14 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                     },
                   ],
                 }}
-                width={Dimensions.get('window').width - 40} // Adjust width as needed
+                width={Dimensions.get('window').width - 40}
                 height={220}
                 yAxisLabel=""
                 chartConfig={{
                   backgroundColor: '#ffffff',
                   backgroundGradientFrom: '#ffffff',
                   backgroundGradientTo: '#ffffff',
-                  decimalPlaces: 0, // Optional
+                  decimalPlaces: 0,
                   color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   style: {
@@ -1403,7 +1378,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   borderRadius: 16,
                 }}
               />
-              {/* New Likes and Replies Analytics */}
+
               <Text style={{fontSize: 20, fontWeight: 'bold', marginTop: 20}}>
                 Weekly Likes and Replies Analytics
               </Text>
@@ -1412,15 +1387,15 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                 data={{
                   labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
                   data: [
-                    [likesData[0], repliesData[0]], // Sunday
-                    [likesData[1], repliesData[1]], // Monday
-                    [likesData[2], repliesData[2]], // Tuesday
-                    [likesData[3], repliesData[3]], // Wednesday
-                    [likesData[4], repliesData[4]], // Thursday
-                    [likesData[5], repliesData[5]], // Friday
-                    [likesData[6], repliesData[6]], // Saturday
+                    [likesData[0], repliesData[0]],
+                    [likesData[1], repliesData[1]],
+                    [likesData[2], repliesData[2]],
+                    [likesData[3], repliesData[3]],
+                    [likesData[4], repliesData[4]],
+                    [likesData[5], repliesData[5]],
+                    [likesData[6], repliesData[6]],
                   ],
-                  barColors: ['rgba(255, 0, 0, 1)', 'rgba(0, 0, 255, 1)'], // Red for Likes, Blue for Replies
+                  barColors: ['rgba(255, 0, 0, 1)', 'rgba(0, 0, 255, 1)'],
                 }}
                 width={Dimensions.get('window').width - 40}
                 height={220}
@@ -1450,12 +1425,54 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 };
 
 const styles = StyleSheet.create({
+  descriptionInput: {
+    borderWidth: 1,
+    borderColor: '#017E5E',
+    margin: 5,
+    padding: 5,
+    borderRadius: 5,
+    textAlignVertical: 'top',
+  },
+  textTitle: {
+    marginTop: 15,
+    fontSize: 14,
+    marginBottom: 5,
+    fontWeight: '600',
+  },
+  textContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  editText: {
+    color: '#017E5E',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    borderBottomColor: '#017E5E',
+    borderBottomWidth: 2,
+    width: '80%',
+    textAlign: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modal: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '90%',
+    maxWidth: 400,
+  },
   continueButton: {
     marginTop: 10,
-    backgroundColor: '#017E5E', // Example background color
+    backgroundColor: '#017E5E',
     padding: 10,
     borderRadius: 5,
-    alignItems: 'center', // Center text inside button
+    alignItems: 'center',
     justifyContent: 'center',
   },
   warning: {
@@ -1490,7 +1507,7 @@ const styles = StyleSheet.create({
   },
 
   modifyButton: {
-    backgroundColor: '#017E5E', // Blue color
+    backgroundColor: '#017E5E',
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 6,
@@ -1499,7 +1516,7 @@ const styles = StyleSheet.create({
   },
 
   deleteButton: {
-    backgroundColor: '#FF3B30', // Red color
+    backgroundColor: '#FF3B30',
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 6,
@@ -1514,7 +1531,7 @@ const styles = StyleSheet.create({
   },
 
   reviewButton: {
-    backgroundColor: '#017E5E', // Blue color like iOS buttons
+    backgroundColor: '#017E5E',
     paddingVertical: 12,
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -1562,7 +1579,7 @@ const styles = StyleSheet.create({
   ratingLine: {
     flex: 1,
     height: 4,
-    backgroundColor: '#ddd', // Light gray background
+    backgroundColor: '#ddd',
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -1616,19 +1633,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)', // Black with 0.5 opacity
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   modalContent1: {
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
     width: '80%',
-    maxWidth: 300, // Optional: to control the max width of the modal
+    maxWidth: 300,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 5,
-    elevation: 10, // For Android shadow effect
+    elevation: 10,
   },
   modalTitleContainer: {
     width: '90%',
@@ -1650,7 +1667,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   selectedReason: {
-    color: '#017E5E', // Selected reason color
+    color: '#017E5E',
     fontSize: 16,
     marginBottom: 15,
     fontWeight: 'bold',
@@ -1762,7 +1779,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    ...StyleSheet.absoluteFillObject, // This makes the modal cover the entire screen
+    ...StyleSheet.absoluteFillObject,
   },
   modalContent: {
     width: '100%',
@@ -1780,12 +1797,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: 'gray',
-  },
-  noMediaText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: 'gray',
+    width: '100%',
   },
   mediaContainer: {
     flexDirection: 'row',
@@ -1833,7 +1845,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContainer: {
-    paddingTop: 0, // Set padding top to 0
+    paddingTop: 0,
   },
   goBackContainer: {
     backgroundColor: '#fff',
@@ -1863,6 +1875,11 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
+  },
+  changeImage: {
+    height: 150,
+    alignSelf: 'stretch',
+    resizeMode: 'cover',
   },
   imagePlaceholder: {
     height: MAX_HEIGHT,
@@ -1959,7 +1976,7 @@ const styles = StyleSheet.create({
   },
   starImage1: {
     height: 100,
-    resizeMode: 'contain'
+    resizeMode: 'contain',
   },
   infoText: {
     fontWeight: '700',
@@ -2015,7 +2032,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // Follow button styles
   followButton: {
     borderColor: '#cecece',
     borderWidth: 1,
@@ -2023,11 +2039,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     fontSize: 15,
     borderRadius: 50,
-    backgroundColor: '#017E5E', // Default background color
-    color: '#FFFFFF', // Default text color
+    backgroundColor: '#017E5E',
+    color: '#FFFFFF',
   },
 
-  // Followed button styles
   followButtonFollowed: {
     borderColor: '#cecece',
     borderWidth: 1,
@@ -2035,8 +2050,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     fontSize: 15,
     borderRadius: 50,
-    backgroundColor: '#fff', // Background for followed state
-    color: '#017E5E', // Text color for followed state
+    backgroundColor: '#fff',
+    color: '#017E5E',
   },
   markerImage: {
     height: 35,

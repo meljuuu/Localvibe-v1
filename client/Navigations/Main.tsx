@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, {useEffect, useState} from 'react';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Tabs from './Tabs';
 import OnBoarding from '../src/screens/OnBoarding';
-import VerifyEmail from '../src/screens/EmailVerificationScreen';
-import { getItem } from '../utils/asyncStorage';
+import {getItem, setItem} from '../utils/asyncStorage';
 import PostScreen from '../src/screens/PostScreen';
 import ProfileScreen from '../src/screens/ProfileScreen';
 import SearchScreen from '../src/screens/SearchScreen';
@@ -15,65 +14,78 @@ import FollowerCard from '../src/components/FollowerCard';
 import EditProfile from '../src/components/EditProfile';
 import BusinessPinScreen from '../src/screens/BusinessPinScreen';
 import PremiumScreen from '../src/screens/PremiumScreen';
+import VerifyEmail from '../src/screens/EmailVerificationScreen';
 
 type Props = {};
 
 const Main = (props: Props) => {
   const Stack = createNativeStackNavigator();
-  const [isVerified, setIsVerified] = useState<boolean | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null); // Set initial state as null
 
   useEffect(() => {
-    checkUserStatus();
+    checkIfAlreadyOnboarded();
   }, []);
 
-  const checkUserStatus = async () => {
-    let userVerified = await getItem('isVerified');
+  const checkIfAlreadyOnboarded = async () => {
     let onBoarded = await getItem('onBoarded');
 
-    if (userVerified === 'true') {
-      if (onBoarded === null) {
-        setShowOnboarding(true);
-      } else {
-        setShowOnboarding(false);
-      }
+    if (onBoarded === null) {
+      setShowOnboarding(true);
     } else {
-      setIsVerified(false);
+      setShowOnboarding(false);
     }
   };
 
-  if (isVerified === null || showOnboarding === null) {
-    return null; // Prevent rendering until values are fetched
+  if (showOnboarding === null) {
+    return null;
   }
 
-  return (
-    <Stack.Navigator
-      initialRouteName={
-        !isVerified
-          ? "VerifyEmail" // Force email verification first
-          : showOnboarding
-          ? "OnBoarding"
-          : "Home"
-      }
-      screenOptions={{ headerShown: false }}>
-      
-      <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
-      <Stack.Screen name="OnBoarding" component={OnBoarding} />
-      <Stack.Screen name="Home" component={Tabs} />
-      <Stack.Screen name="Post" component={PostScreen} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="Search" component={SearchScreen} />
-      <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-      <Stack.Screen name="CreateReplies" component={CreateRepliesScreen} />
-      <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
-      <Stack.Screen name="BusinessPinScreen" component={BusinessPinScreen} />
-      <Stack.Screen name="PostLikeCard" component={PostLikeCard} />
-      <Stack.Screen name="FollowerCard" component={FollowerCard} />
-      <Stack.Screen name="EditProfile" component={EditProfile} />
-      <Stack.Screen name="PremiumScreen" component={PremiumScreen} />
-      
-    </Stack.Navigator>
-  );
+  if (showOnboarding) {
+    return (
+      <Stack.Navigator
+        initialRouteName="Onboarding"
+        screenOptions={{
+          headerShown: false,
+        }}>
+        <Stack.Screen name="OnBoarding" component={OnBoarding} />
+        <Stack.Screen name="Home" component={Tabs} />
+        <Stack.Screen name="Post" component={PostScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Search" component={SearchScreen} />
+        <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+        <Stack.Screen name="CreateReplies" component={CreateRepliesScreen} />
+        <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
+        <Stack.Screen name="BusinessPin" component={BusinessPinScreen} />
+        <Stack.Screen name="PostLikeCard" component={PostLikeCard} />
+        <Stack.Screen name="FollowerCard" component={FollowerCard} />
+        <Stack.Screen name="EditProfile" component={EditProfile} />
+        <Stack.Screen name="PremiumScreen" component={PremiumScreen} />
+        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
+      </Stack.Navigator>
+    );
+  } else {
+    return (
+      <Stack.Navigator
+        initialRouteName="VerifyEmail"
+        screenOptions={{
+          headerShown: false,
+        }}>
+        <Stack.Screen name="Home" component={Tabs} />
+        <Stack.Screen name="Post" component={PostScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Search" component={SearchScreen} />
+        <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+        <Stack.Screen name="CreateReplies" component={CreateRepliesScreen} />
+        <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
+        <Stack.Screen name="BusinessPinScreen" component={BusinessPinScreen} />
+        <Stack.Screen name="PostLikeCard" component={PostLikeCard} />
+        <Stack.Screen name="FollowerCard" component={FollowerCard} />
+        <Stack.Screen name="EditProfile" component={EditProfile} />
+        <Stack.Screen name="PremiumScreen" component={PremiumScreen} />
+        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
+      </Stack.Navigator>
+    );
+  }
 };
 
 export default Main;
