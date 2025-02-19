@@ -6,11 +6,9 @@ import {
 
 export const sendVerificationEmail = async (email, verificationToken) => {
   try {
-    console.log("Sending verification email to:", email);
-    console.log("Verification token:", verificationToken);
     const { data, error } = await resend.emails.send({
       from: "Acme <onboarding@resend.dev>",
-      to: ["jaminaraven@gmail.com"],
+      to: [email],
       subject: "Verify Your Email Address Now",
       html: verificationTokenEmailTemplate.replace(
         "{verificationToken}",
