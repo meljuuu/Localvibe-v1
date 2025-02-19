@@ -5,7 +5,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Create or update a report
 export const createOrUpdateReportAction =
-  (userId: string, reportedItemId: string, itemType: string, reason: string) =>
+  (
+    userId: string,
+    reportedItemId: string,
+    reportTitle: string,
+    reportImage: string,
+    itemType: string,
+    reason: string,
+  ) =>
   async (dispatch: Dispatch<any>) => {
     try {
       console.log('Dispatching createOrUpdateReportAction...'); // Debugging log
@@ -20,6 +27,8 @@ export const createOrUpdateReportAction =
       console.log('Payload being sent:', {
         userId,
         reportedItemId,
+        reportTitle,
+        reportImage,
         itemType,
         reason,
       }); // Debugging log
@@ -27,14 +36,13 @@ export const createOrUpdateReportAction =
 
       const {data} = await axios.post(
         `${URI}/create-or-update-report`,
-        {userId, reportedItemId, itemType, reason},
+        {userId, reportedItemId, reportTitle, reportImage, itemType, reason},
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         },
       );
-
 
       console.log('API Response:', data); // Debugging log
 

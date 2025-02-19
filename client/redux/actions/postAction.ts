@@ -25,11 +25,6 @@ export const createPostAction =
         user,
       }); // Debugging log
 
-      console.log(
-        'Calling the endpoint:',
-        `${URI}/create-or-update-report`,
-      );
-
       const {data} = await axios.post(
         `${URI}/create-post`,
         {title, image, user, replies},
@@ -165,6 +160,88 @@ export const removeLikes =
       );
     } catch (error) {
       console.error('Error following likes:', error);
+    }
+  };
+
+// add share
+export const addShare =
+  ({postId, posts, user}: ShareParams) =>
+  async (dispatch: Dispatch<any>) => {
+    try {
+      console.log('addShare function called');
+      const token = await AsyncStorage.getItem('token');
+
+      const updatedPosts = posts.map((post: any) =>
+        post._id === postId
+          ? {
+              ...post,
+              shares: [
+                ...post.shares,
+                {
+                  userName: user.name,
+                  userId: user._id,
+                  userAvatar: user.avatar.url,
+                  postId,
+                  created_at: new Date().toISOString(),
+                },
+              ],
+            }
+          : post,
+      );
+
+      dispatch({
+        type: 'getAllPostsSuccess',
+        payload: updatedPosts,
+      });
+
+      await axios.put(
+        `${URI}/update-shares`,
+        {postId},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+    } catch (error: any) {
+      console.log(error, 'error');
+    }
+  };
+
+// remove share
+export const removeShare =
+  ({postId, posts, user}: ShareParams) =>
+  async (dispatch: Dispatch<any>) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+
+      const updatedPosts = posts.map((post: any) =>
+        post._id === postId
+          ? {
+              ...post,
+              shares: post.shares.filter(
+                (share: any) => share.userId !== user._id,
+              ),
+            }
+          : post,
+      );
+
+      dispatch({
+        type: 'getAllPostsSuccess',
+        payload: updatedPosts,
+      });
+
+      await axios.put(
+        `${URI}/update-shares`,
+        {postId},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+    } catch (error) {
+      console.error('Error removing share:', error);
     }
   };
 
