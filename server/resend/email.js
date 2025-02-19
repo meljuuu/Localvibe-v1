@@ -74,3 +74,9 @@ export const sendResetSuccessEmail = async (email) => {
     console.log("error sending password reset successful email", error);
   }
 }
+
+// Add this function to resend the verification email
+export const resendVerificationEmail = async (email, verificationToken) => {
+  console.log("Resending verification email...");
+  return await sendVerificationEmail(email, verificationToken);
+};
