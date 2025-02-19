@@ -39,6 +39,11 @@ router.route("/update-profile").put(isAuthenticatedUser, updateUserInfo);
 
 router.route("/update-coor").put(isAuthenticatedUser, updateUserCoor);
 
+router.route("/forgot-password").post(forgotPassword);
+router.route("/reset-password/:token").post(resetPassword);
+router.route("/check-auth").get(isAuthenticatedUser, checkAuth);
+router.route("/verify-email").post(verifyEmail);
+
 router.route("/me").get(isAuthenticatedUser, userDetails);
 
 router

@@ -245,6 +245,24 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
+exports.checkAuth = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, user: { ...user._doc, password: undefined } });
+  } catch (error) {
+    console.log("error checking auth", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
 //  Get user Details
 exports.userDetails = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id);
