@@ -56,8 +56,9 @@ const SignupScreen = ({navigation, route}: Props) => {
 
   const submitHandler = async (e: any) => {
     try {
-      Alert.alert('Registration Successful!');
       await registerUser(name, email, password, avatar, accountType)(dispatch);
+      Alert.alert('Registration Successful!');
+      navigation.navigate('/verify-email');
     } catch (error) {
       console.error('An error occurred:', error);
       Alert.alert('Error', 'An error occurred while processing your request.');
