@@ -67,9 +67,9 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
       password,
       accountType,
       userName: userNameWithoutSpace + " #" + uniqueNumber,
-      avatar: avatar
-        ? { public_id: myCloud.public_id, url: myCloud.secure_url }
-        : null,
+      // avatar: avatar
+      //   ? { public_id: myCloud.public_id, url: myCloud.secure_url }
+      //   : null,
       verificationToken: verificationToken,
       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
     });
