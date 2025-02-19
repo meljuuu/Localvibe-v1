@@ -740,3 +740,37 @@ exports.getSentFriendRequests = catchAsyncErrors(async (req, res, next) => {
     next(new ErrorHandler(error.message, 500));
   }
 });
+
+exports.resendVerificationEmail = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ success: false, message: "Email already verified" });
+    }
+
+    // Generate a new verification token
+    const verificationToken = generateVerificationToken();
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    await user.save();
+
+    // Send the verification email
+    await sendVerificationEmail(user.email, verificationToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Verification email sent successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
