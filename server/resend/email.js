@@ -5,6 +5,8 @@ import {
 } from "./email-templates.js";
 
 export const sendVerificationEmail = async (email, verificationToken) => {
+  console.error("Sending verification email to:", email);
+  console.error("Verification token:", verificationToken);
   try {
     const { data, error } = await resend.emails.send({
       from: "Acme <onboarding@resend.dev>",
