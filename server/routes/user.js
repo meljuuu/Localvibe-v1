@@ -13,6 +13,10 @@ const {
   updateUserCoor,
   updateInteractions,
   removeInteractions,
+  forgotPassword,
+  resetPassword,
+  checkAuth,
+  verifyEmail
 } = require("../controllers/user");
 
 const { isAuthenticatedUser } = require("../middleware/auth");
