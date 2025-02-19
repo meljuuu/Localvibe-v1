@@ -19,6 +19,16 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please enter your email"],
       unique: true,
     },
+    isVerified:  {
+      type: Boolean,
+      default: false
+    },
+    
+    resetPasswordToken: String,
+    resetPasswordExpiresAt: String,
+    verificationToken: String,
+    verificationTokenExpiresAt: String,
+    
     accountType: {
       type: String,
       enum: ["admin", "personal", "business", "prembusiness"],
@@ -47,6 +57,16 @@ const userSchema = new mongoose.Schema(
         required: [true, "Please upload one profile picture!"],
       },
     },
+    coverPhoto: {
+      public_id: {
+        type: String,
+        default: null,
+      },
+      url: {
+        type: String,
+        default: null,
+      },
+    },
     followers: [
       {
         userId: {
@@ -73,6 +93,15 @@ const userSchema = new mongoose.Schema(
         score: {
           type: Number,
           default: 0,
+        },
+      },
+    ],
+    share: [
+      {
+        post_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Post",
+          required: true,
         },
       },
     ],

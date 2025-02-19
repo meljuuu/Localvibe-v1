@@ -108,7 +108,7 @@ exports.updateLikes = catchAsyncErrors(async (req, res, next) => {
               userName: req.user.userName,
               userId: req.user.id,
               userAvatar: req.user.avatar.url,
-              postId,
+              createdAt: new Date(),
             },
           },
         }
@@ -447,5 +447,79 @@ exports.deletePost = catchAsyncErrors(async (req, res, next) => {
   } catch (error) {
     console.log(error);
     return next(new ErrorHandler(error, 400));
+  }
+});
+
+
+// add or remove shares
+exports.updateShares = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const postId = req.body.postId;
+
+    const post = await Post.findById(postId);
+
+    const isSharedBefore = post.shares.find(
+      (item) => item.userId === req.user.id
+    );
+
+    if (isSharedBefore) {
+      // If shared before, remove the share
+      await Post.findByIdAndUpdate(postId, {
+        $pull: {
+          shares: {
+            userId: req.user.id,
+          },
+        },
+      });
+
+      if (req.user.id !== post.user._id) {
+        // Delete notification if shared post is not by the user
+        await Notification.deleteOne({
+          "creator._id": req.user.id,
+          userId: post.user._id,
+          type: "Share",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Share removed successfully",
+      });
+    } else {
+      // If not shared before, add the share
+      await Post.updateOne(
+        { _id: postId },
+        {
+          $push: {
+            shares: {
+              name: req.user.name,
+              userName: req.user.userName,
+              userId: req.user.id,
+              userAvatar: req.user.avatar.url,
+              postId,
+            },
+          },
+        }
+      );
+
+      if (req.user.id !== post.user._id) {
+        // Create notification for the user
+        await Notification.create({
+          creator: req.user,
+          type: "Share",
+          title: post.title ? post.title : "Shared your post",
+          userId: post.user._id,
+          postId: postId,
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Share added successfully",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHandler(error.message, 400));
   }
 });
