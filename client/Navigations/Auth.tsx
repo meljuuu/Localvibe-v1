@@ -3,6 +3,7 @@ import LoginScreen from '../src/screens/LoginScreen';
 import SignUpScreen from '../src/screens/SignupScreen';
 import SignUpInfo from '../src/screens/SignupInfo';
 import OnBoarding from '../src/screens/OnBoarding';
+import VerifyEmail from '../src/screens/EmailVerificationScreen';
 import {getItem, setItem} from '../utils/asyncStorage';
 
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -30,32 +31,34 @@ const Auth = (props: Props) => {
     return null;
   }
 
-   if (showOnboarding) {
-     return (
-       <Stack.Navigator
-         initialRouteName="Onboarding"
-         screenOptions={{
-           headerShown: false,
-         }}>
-         <Stack.Screen name="OnBoarding" component={OnBoarding} />
-         <Stack.Screen name="Login" component={LoginScreen} />
-         <Stack.Screen name="Signup" component={SignUpScreen} />
-         <Stack.Screen name="Signinfo" component={SignUpInfo} />
-       </Stack.Navigator>
-     );
-   } else {
-     return (
-       <Stack.Navigator
-         initialRouteName="Login"
-         screenOptions={{
-           headerShown: false,
-         }}>
-         <Stack.Screen name="Login" component={LoginScreen} />
-         <Stack.Screen name="Signup" component={SignUpScreen} />
-         <Stack.Screen name="Signinfo" component={SignUpInfo} />
-       </Stack.Navigator>
-     );
-   }
+  if (showOnboarding) {
+    return (
+      <Stack.Navigator
+        initialRouteName="Onboarding"
+        screenOptions={{
+          headerShown: false,
+        }}>
+        <Stack.Screen name="OnBoarding" component={OnBoarding} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Signup" component={SignUpScreen} />
+        <Stack.Screen name="Signinfo" component={SignUpInfo} />
+        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
+      </Stack.Navigator>
+    );
+  } else {
+    return (
+      <Stack.Navigator
+        initialRouteName="Login"
+        screenOptions={{
+          headerShown: false,
+        }}>
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Signup" component={SignUpScreen} />
+        <Stack.Screen name="Signinfo" component={SignUpInfo} />
+        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
+      </Stack.Navigator>
+    );
+  }
 };
 
 export default Auth;
