@@ -14,10 +14,7 @@ export const sendVerificationEmail = async (email, verificationToken) => {
       from: "Acme <onboarding@resend.dev>",
       to: [email],
       subject: "Verify Your Email Address Now",
-      html: verificationTokenEmailTemplate.replace(
-        "{verificationToken}",
-        verificationToken
-      ),
+       html: "This is a test email.",
     });
 
     // Log the full response from the email service
