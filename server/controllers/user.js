@@ -95,30 +95,76 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
+
+exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
+  const { code } = req.body;
+  try {
+    const user = await User.findOne({
+      verificationToken: code,
+      verificationTokenExpiresAt: { $gt: Date.now() },
+    });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired verification code",
+      });
+    }
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpiresAt = undefined;
+    await user.save();
+
+    await sendWelcomeEmail(user.email, user.name);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Email verified successfully" });
+  } catch (error) {
+    console.log("error verifying email", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
 // Login User
 exports.loginUser = catchAsyncErrors(async (req, res, next) => {
   const { email, password } = req.body;
+  try {
+    if (!email || !password) {
+      return next(new ErrorHandler("Please enter the email & password", 400));
+    }
 
-  if (!email || !password) {
-    return next(new ErrorHandler("Please enter the email & password", 400));
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return next(
+        new ErrorHandler("User is not find with this email & password", 401)
+      );
+    }
+    const isPasswordMatched = await user.comparePassword(password);
+
+    if (!isPasswordMatched) {
+      return next(
+        new ErrorHandler("User is not find with this email & password", 401)
+      );
+    }
+
+    const isVerified = user.isVerified;
+      if (!isVerified) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Email not verified" });
+      }
+
+    sendToken(user, 201, res);
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+    });
+  } catch (error) {
+    console.log("error logging in", error);
+    res.status(400).json({ success: false, message: error.message });
   }
-
-  const user = await User.findOne({ email }).select("+password");
-
-  if (!user) {
-    return next(
-      new ErrorHandler("User is not find with this email & password", 401)
-    );
-  }
-  const isPasswordMatched = await user.comparePassword(password);
-
-  if (!isPasswordMatched) {
-    return next(
-      new ErrorHandler("User is not find with this email & password", 401)
-    );
-  }
-
-  sendToken(user, 201, res);
 });
 
 //  Log out user
@@ -134,6 +180,69 @@ exports.logoutUser = catchAsyncErrors(async (req, res, next) => {
     success: true,
     message: "Log out success",
   });
+});
+
+exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+    const resetPasswordToken = crypto.randomBytes(32).toString("hex");
+    const resetPasswordExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
+
+    user.resetPasswordToken = resetPasswordToken;
+    user.resetPasswordExpiresAt = resetPasswordExpiresAt;
+
+    await user.save();
+    await sendPasswordResetEmail(
+      user.email,
+      `${process.env.CLIENT_URL}/reset-password/${resetPasswordToken}`
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset email sent successfully!",
+    });
+  } catch (error) {
+    console.log("error sending password reset email", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+    // console.log(token)
+    // console.log(password)
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpiresAt: { $gt: Date.now() },
+    });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired reset token" });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiresAt = undefined;
+    await user.save();
+
+    await sendResetSuccessEmail(user.email);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Password reset successfully" });
+  } catch (error) {
+    console.log("error resetting password", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
 });
 
 //  Get user Details
