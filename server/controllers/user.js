@@ -5,6 +5,7 @@ const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const sendToken = require("../utils/jwtToken.js");
 const cloudinary = require("cloudinary");
 const Notification = require("../models/NotificationModel");
+import { generateVerificationToken } from "../utils/generateVerificationToken.js";
 const express = require("express");
 
 exports.updateUserCoor = catchAsyncErrors(async (req, res, next) => {
@@ -47,8 +48,20 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 
     const userNameWithoutSpace = name.replace(/\s/g, "");
     const uniqueNumber = Math.floor(Math.random() * 1000);
+    const verificationToken = generateVerificationToken();
 
-    user = await User.create({
+    // user = await User.create({
+    //   name,
+    //   email,
+    //   password,
+    //   accountType,
+    //   userName: userNameWithoutSpace + " #" + uniqueNumber,
+    //   avatar: avatar
+    //     ? { public_id: myCloud.public_id, url: myCloud.secure_url }
+    //     : null,
+    // });
+
+    user = new User({
       name,
       email,
       password,
@@ -57,7 +70,13 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
       avatar: avatar
         ? { public_id: myCloud.public_id, url: myCloud.secure_url }
         : null,
+      verificationToken: verificationToken,
+      verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
     });
+
+    await user.save(); 
+
+    await sendVerificationEmail(user.email, verificationToken);
 
     sendToken(user, 201, res);
   } catch (error) {
