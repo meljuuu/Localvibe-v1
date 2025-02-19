@@ -16,8 +16,7 @@ const {
   forgotPassword,
   resetPassword,
   checkAuth,
-  verifyEmail,
-  resendVerificationEmail,
+  verifyEmail
 } = require("../controllers/user");
 
 const { isAuthenticatedUser } = require("../middleware/auth");
@@ -58,7 +57,5 @@ router
 router
   .route("/remove-interactions")
   .put(isAuthenticatedUser, removeInteractions);
-
-router.route("/resend-verification").post(resendVerificationEmail);
 
 module.exports = router;
