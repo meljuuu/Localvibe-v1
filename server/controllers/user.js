@@ -6,6 +6,13 @@ const sendToken = require("../utils/jwtToken.js");
 const cloudinary = require("cloudinary");
 const Notification = require("../models/NotificationModel");
 import { generateVerificationToken } from "../utils/generateVerificationToken.js";
+import {
+  sendPasswordResetEmail,
+  sendResetSuccessEmail,
+  sendVerificationEmail,
+  sendWelcomeEmail,
+} from "../resend/email.js";
+import crypto from "crypto";
 const express = require("express");
 
 exports.updateUserCoor = catchAsyncErrors(async (req, res, next) => {
@@ -67,18 +74,19 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
       password,
       accountType,
       userName: userNameWithoutSpace + " #" + uniqueNumber,
-      // avatar: avatar
-      //   ? { public_id: myCloud.public_id, url: myCloud.secure_url }
-      //   : null,
+      avatar: avatar
+        ? { public_id: myCloud.public_id, url: myCloud.secure_url }
+        : null,
       verificationToken: verificationToken,
       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
     });
 
     await user.save(); 
 
+    sendToken(user, 201, res);
+
     await sendVerificationEmail(user.email, verificationToken);
 
-    sendToken(user, 201, res);
   } catch (error) {
     res.status(500).json({
       success: false,
