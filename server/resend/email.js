@@ -5,8 +5,12 @@ import {
 } from "./email-templates.js";
 
 export const sendVerificationEmail = async (email, verificationToken) => {
+  console.log("Preparing to send verification email...");
+  console.log("Email:", email);
+  console.log("Verification Token:", verificationToken);
+
   try {
-    const { data, error } = await resend.emails.send({
+    const response = await resend.emails.send({
       from: "Acme <onboarding@resend.dev>",
       to: [email],
       subject: "Verify Your Email Address Now",
@@ -15,9 +19,23 @@ export const sendVerificationEmail = async (email, verificationToken) => {
         verificationToken
       ),
     });
+
+    // Log the full response from the email service
+    console.log("Email service response:", response);
+
+    // Check for errors in the response
+    if (response.error) {
+      console.error("Error sending email:", response.error);
+      throw new Error("Error sending verification email");
+    } else {
+      console.log("Email sent successfully:", response.data);
+    }
   } catch (error) {
-    console.log("error sending verification email", error);
-    throw new Error("Error sending verification email");
+    // Log the error details
+    console.error("Error sending verification email:", error);
+    console.error("Error message:", error.message);
+    console.error("Stack trace:", error.stack);
+    throw new Error("Error sending verification email: " + error.message);
   }
 };
 
