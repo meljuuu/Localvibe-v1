@@ -84,7 +84,7 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
     await user.save(); 
 
     sendToken(user, 201, res);
-
+    
     const decryptedEmail = user.getDecryptedEmail();
     await sendVerificationEmail(decryptedEmail, verificationToken);
 
@@ -100,10 +100,12 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
   const { code } = req.body;
   try {
-    const users = await User.findOne({
-      verificationTokenExpiresAt: { $gt: Date.now() },
+    // Find users with unexpired tokens
+    const users = await User.find({
+      verificationTokenExpiresAt: { $gt: Date.now() }
     });
-
+    
+    // Find the matching user by decrypting tokens
     let user = null;
     for (const potentialUser of users) {
       if (potentialUser.verificationToken) {
@@ -114,19 +116,21 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
         }
       }
     }
-
+    
     if (!user) {
       return res.status(400).json({
         success: false,
         message: "Invalid or expired verification code",
       });
     }
+    
     user.isVerified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpiresAt = undefined;
     await user.save();
 
-    await sendWelcomeEmail(user.email, user.name);
+    const decryptedEmail = user.getDecryptedEmail();
+    await sendWelcomeEmail(decryptedEmail, user.name);
 
     res
       .status(200)
