@@ -7,38 +7,31 @@ const pinSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    // Business name
     businessName: {
       type: String,
       required: true,
     },
-    // Business description
     description: {
       type: String,
       required: true,
     },
-    // Business category (e.g., restaurant, salon, store, etc.)
     category: {
       type: String,
       required: true,
     },
-    // Latitude and longitude coordinates for the pin location
     latitude: {
       type: Number,
       default: null,
     },
-
     longitude: {
       type: Number,
       default: null,
     },
-    // Business contact information (optional)
     contactInfo: {
       phone: String,
       email: String,
       website: String,
     },
-    // Images of the business (optional)
     image: {
       public_id: {
         type: String,
@@ -47,7 +40,6 @@ const pinSchema = new mongoose.Schema(
         type: String,
       },
     },
-    // Array to store visitors
     visitors: [
       {
         userId: {
@@ -61,7 +53,52 @@ const pinSchema = new mongoose.Schema(
         },
       },
     ],
-    // Timestamps for when the pin was created and updated
+    // 🔥 FIX: Add reviews array
+    reviews: [
+      {
+        pinId: {
+          type: String,
+          required: true,
+        },
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        image: {
+          type: String,
+          required: true,
+        },
+        reviewText: {
+          type: String,
+          required: true,
+        },
+        ratings: {
+          type: Number,
+          required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    reviewCount: {
+      type: Number,
+      default: 0,
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

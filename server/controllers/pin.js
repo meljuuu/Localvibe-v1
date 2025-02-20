@@ -149,13 +149,11 @@ exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-// Add a review to a pin
 exports.addReview = catchAsyncErrors(async (req, res, next) => {
   try {
     const { pinId, reviewText, ratings, name, image } = req.body;
-    const userId = req.user._id; // Get the user ID from the authenticated request
+    const userId = req.user._id; // Make sure req.user exists
 
-    // Validate required fields
     if (!pinId || !reviewText || !ratings || !name || !image) {
       return next(new ErrorHandler("All fields are required", 400));
     }
@@ -165,26 +163,23 @@ exports.addReview = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
-    // Construct review object following your schema
+    // Construct the review
     const review = {
-      pinId,  // Matches schema (String)
-      userId, // Matches schema (String)
-      name,   // Directly stored (String)
-      image,  // Directly stored (String)
+      pinId,
+      userId,
+      name,
+      image,
       reviewText,
       ratings,
       createdAt: new Date(),
     };
 
-    // Add review to the pin
     pin.reviews.push(review);
     pin.reviewCount = pin.reviews.length;
 
-    // Calculate the new average rating
     const totalRatings = pin.reviews.reduce((sum, rev) => sum + rev.ratings, 0);
     pin.averageRating = totalRatings / pin.reviewCount;
 
-    // Verify the pin if it meets the criteria
     pin.isVerified = pin.reviewCount >= 10 && pin.averageRating >= 4.5;
 
     await pin.save();
@@ -198,6 +193,7 @@ exports.addReview = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
 
 exports.modifyReview = catchAsyncErrors(async (req, res, next) => {
   try {
