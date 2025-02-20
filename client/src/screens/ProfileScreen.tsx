@@ -155,10 +155,15 @@ const ProfileScreen = ({navigation}) => {
       // Combine myPosts with sharedPosts
       const combinedPosts = [...myPosts, ...sharedPosts];
 
-      // Log the combined posts
+      // Sort combinedPosts by createdAt date of post or shares
+      const sortedPosts = combinedPosts.sort((a, b) => {
+        const aDate = a.shares.length > 0 ? new Date(a.shares[0].createdAt) : new Date(a.createdAt);
+        const bDate = b.shares.length > 0 ? new Date(b.shares[0].createdAt) : new Date(b.createdAt);
+        return bDate - aDate; // Sort in descending order
+      });
 
-      // Set userPosts to combinedPosts
-      setUserPosts(combinedPosts); // Set user posts state
+      // Set userPosts to sortedPosts
+      setUserPosts(sortedPosts); // Set user posts state
     }
   }, [posts, user]);
 
