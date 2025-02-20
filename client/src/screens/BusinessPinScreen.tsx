@@ -613,26 +613,38 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
   const safeAverageRating = isNaN(averageRating) ? 0.0 : averageRating;
 
   const getWeeklyVisitorCounts = (localPin: any) => {
-    const currentDate = new Date();
-    const weekCounts = Array(7).fill(0); // Array to hold counts for the last 7 days
+  const currentDate = new Date();
+  const weekCounts = Array(7).fill(0); // Array to hold counts for the last 7 days
 
-    if (localPin && Array.isArray(localPin.visitors)) {
-      localPin.visitors.forEach(visitor => {
-        const visitorDate = new Date(visitor.created_at);
-        const dayDifference = Math.floor(
-          (currentDate.getTime() - visitorDate.getTime()) / (1000 * 3600 * 24),
-        );
+  // Normalize current date to midnight
+  const normalizedCurrentDate = new Date(currentDate.setHours(0, 0, 0, 0));
 
-        if (dayDifference >= 0 && dayDifference < 7) {
-          weekCounts[dayDifference] += 1; // Increment the count for the corresponding day
-        }
-      });
-    } else {
-      console.warn(`No visitors found for local pin ID: ${localPin?._id}`); // Log if no visitors
-    }
+  // Get the index of today (0 = Sunday, 1 = Monday, etc.)
+  const todayIndex = normalizedCurrentDate.getDay();
 
-    return weekCounts.reverse(); // Reverse to show the most recent week first
-  };
+  if (localPin && Array.isArray(localPin.visitors)) {
+    localPin.visitors.forEach(visitor => {
+      const visitorDate = new Date(visitor.created_at);
+      
+      // Normalize visitor date to midnight
+      const normalizedVisitorDate = new Date(visitorDate.setHours(0, 0, 0, 0));
+
+      // Calculate the day difference
+      const dayDifference = Math.floor(
+        (normalizedCurrentDate.getTime() - normalizedVisitorDate.getTime()) / (1000 * 3600 * 24)
+      );
+      // Correctly assign the count based on the day difference
+      if (dayDifference >= 0 && dayDifference < 7) {
+        const correctIndex = (todayIndex - dayDifference + 7) % 7; // Adjust for weekly wrap-around
+        weekCounts[correctIndex] += 1;
+      }
+    });
+  } else {
+    console.warn(`No visitors found for local pin ID: ${localPin?._id}`);
+  }
+  return weekCounts;
+};
+
 
   // Call the function with the localPin
   const weeklyVisitorCounts = getWeeklyVisitorCounts(localPin);
@@ -691,6 +703,20 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
   // Inside your component, after calculating visitor counts
   const {likesData = [], repliesData = []} = getWeeklyLikesAndReplies(postData);
+
+  // Logging visitor data and weekly counts
+  {localPin && localPin.visitors && (
+    <View>
+      <Text>Weekly Visitor Counts:</Text>
+    </View>
+  )}
+
+  // Function to get the day of the week for a specific date
+  const logDayOfWeek = (dateString: string) => {
+    const date = new Date(dateString);
+    const options = { weekday: 'long' }; // Options to get the full name of the day
+    const dayName = date.toLocaleDateString('en-US', options);
+  };
 
   return (
     <View style={styles.container}>
@@ -1229,11 +1255,11 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                         <View style={styles.dayContainer}>
                           <TouchableOpacity
                             onPress={() => toggleOptions(review._id)}>
-                            <Image
-                              style={styles.optionImage}
-                              source={require('../assets/options.png')}
-                            />
-                          </TouchableOpacity>
+                              <Image
+                                style={styles.optionImage}
+                                source={require('../assets/options.png')}
+                              />
+                            </TouchableOpacity>
 
                           <Text style={styles.daysAgo}>
                             {getDaysAgo(review.createdAt)}
@@ -1350,7 +1376,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
                   datasets: [
                     {
-                      data: weeklyVisitorCounts,
+                      data: weeklyVisitorCounts, // Use the counts directly
                     },
                   ],
                 }}
@@ -1378,6 +1404,8 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   borderRadius: 16,
                 }}
               />
+
+             
 
               <Text style={{fontSize: 20, fontWeight: 'bold', marginTop: 20}}>
                 Weekly Likes and Replies Analytics

@@ -355,40 +355,43 @@ export const deleteReviewAction =
 // Increment Visit Count
 
 // Add Visit Action
-exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
+export const addVisitorAction = (pinId: string, userId: string) => async (dispatch: Dispatch<any>) => {
   try {
-    const { pinId, userId } = req.body;
+    dispatch({ type: 'addVisitorRequest' });
 
-    // Validate input
-    if (!pinId || !userId) {
-      return next(new ErrorHandler("Pin ID and User ID are required", 400));
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      throw new Error('Authentication token not found');
     }
 
-    const pin = await Pin.findById(pinId);
-    if (!pin) {
-      return next(new ErrorHandler("Pin not found", 404));
-    }
+    console.log('Attempting to add visitor:', { pinId, userId });
 
-    // Ensure visitors is initialized as an array if it doesn't exist
-    if (!Array.isArray(pin.visitors)) {
-      pin.visitors = [];
-    }
-
-    // Prevent duplicate visitors
-    if (!pin.visitors.some(visitor => visitor.userId.toString() === userId)) {
-      pin.visitors.push({ userId, created_at: new Date() }); // Add userId and created_at
-      await pin.save();
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Visitor added successfully",
-      visitors: pin.visitors,
+    const { data } = await axios.post(`${URI}/add-visitor`, {
+      pinId,
+      userId,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
-  } catch (error) {
-    return next(new ErrorHandler(error.message, 400));
+
+    console.log('Add visitor response:', data);
+
+    dispatch({
+      type: 'addVisitorSuccess',
+      payload: data.visitors,
+    });
+  } catch (error: any) {
+    console.error(
+      'Error during addVisitor action:',
+      error.response?.data?.message || error.message,
+    );
+    dispatch({
+      type: 'addVisitorFailed',
+      payload: error.response?.data?.message || 'An unexpected error occurred.',
+    });
   }
-});
+};
 
 
 // Get Pin by ID Action
