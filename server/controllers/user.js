@@ -39,11 +39,18 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
   try {
     const { name, email, password, avatar, accountType } = req.body;
     
-    // Find all users and check if email already exists by decrypting
+    // Find all users
     const allUsers = await User.find();
+    
+    // Check if email exists by safely decrypting
     const emailExists = allUsers.some(user => {
-      const decryptedUserEmail = decryptData(user.email);
-      return decryptedUserEmail === email;
+      try {
+        const decryptedUserEmail = user.getDecryptedEmail();
+        return decryptedUserEmail === email;
+      } catch (err) {
+        console.log(`Error decrypting email for user ${user._id}:`, err.message);
+        return false; // Skip this user if decryption fails
+      }
     });
     
     if (emailExists) {
