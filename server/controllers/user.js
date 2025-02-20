@@ -38,9 +38,8 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
   try {
     const { name, email, password, avatar, accountType } = req.body;
 
-    const decryptedEmail = user.getDecryptedEmail();
     const encryptedEmail = encryptData(email);
-    
+
     let user = await User.findOne({ email: encryptedEmail });
 
     if (user) {
@@ -88,6 +87,7 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
     await user.save(); 
 
     sendToken(user, 201, res);
+    const decryptedEmail = user.getDecryptedEmail();
     
     await sendVerificationEmail(decryptedEmail, verificationToken);
 
