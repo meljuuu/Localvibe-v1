@@ -82,7 +82,7 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
     //     : null,
     // });
 
-    user = new User({
+    let user = new User({
       name,
       email,
       password,
