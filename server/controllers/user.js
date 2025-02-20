@@ -37,12 +37,15 @@ exports.updateUserCoor = catchAsyncErrors(async (req, res, next) => {
 exports.createUser = catchAsyncErrors(async (req, res, next) => {
   try {
     const { name, email, password, avatar, accountType } = req.body;
-    const { encryptData } = require("../utils/encryption");
-    const encryptedEmail = encryptData(email);
-
-    let user = await User.findOne({ email: encryptedEmail });
-
-    if (user) {
+    
+    // Find all users and check if email already exists by decrypting
+    const allUsers = await User.find();
+    const emailExists = allUsers.some(user => {
+      const decryptedUserEmail = decryptData(user.email);
+      return decryptedUserEmail === email;
+    });
+    
+    if (emailExists) {
       return res
         .status(400)
         .json({ success: false, message: "User already exists" });
