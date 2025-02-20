@@ -27,11 +27,19 @@ const ProfileScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const logoutHandler = async () => {
     try {
-      await AsyncStorage.clear(); // Clear all data in AsyncStorage
+      // Retrieve all keys from AsyncStorage
+      const keys = await AsyncStorage.getAllKeys();
+      // Filter out the keys to keep
+      const keysToKeep = ['onBoarded', 'token'];
+      const keysToRemove = keys.filter(key => !keysToKeep.includes(key));
+      
+      // Remove all keys except the ones to keep
+      await AsyncStorage.multiRemove(keysToRemove);
+      
       logoutUser()(dispatch); // Dispatch logout action
-      console.log('Logged out and AsyncStorage cleared');
+      console.log('Logged out and specified AsyncStorage data retained');
     } catch (error) {
-      console.error('Error clearing AsyncStorage:', error);
+      console.error('Error managing AsyncStorage:', error);
     }
   };
 
