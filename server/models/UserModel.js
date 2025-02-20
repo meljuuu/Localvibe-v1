@@ -121,6 +121,41 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Encrypt Email & Tokens Before Saving
+userSchema.pre("save", async function (next) {
+  if (this.isModified("email")) {
+    this.email = encryptData(this.email);
+  }
+
+  if (this.isModified("verificationToken") && this.verificationToken) {
+    this.verificationToken = encryptData(this.verificationToken);
+  }
+
+  if (this.isModified("resetPasswordToken") && this.resetPasswordToken) {
+    this.resetPasswordToken = encryptData(this.resetPasswordToken);
+  }
+
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+
+  next();
+});
+
+// Decrypt Email & Tokens
+userSchema.methods.getDecryptedEmail = function () {
+  return decryptData(this.email);
+};
+
+userSchema.methods.getDecryptedVerificationToken = function () {
+  return this.verificationToken ? decryptData(this.verificationToken) : null;
+};
+
+userSchema.methods.getDecryptedResetPasswordToken = function () {
+  return this.resetPasswordToken ? decryptData(this.resetPasswordToken) : null;
+};
+
+
 // Hash password
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
