@@ -6,6 +6,7 @@ const sendToken = require("../utils/jwtToken.js");
 const cloudinary = require("cloudinary");
 const Notification = require("../models/NotificationModel");
 import { generateVerificationToken } from "../utils/generateVerificationToken.js";
+const { encryptData, decryptData } = require("../utils/encryption");
 import {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
@@ -90,7 +91,6 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
     await user.save(); 
 
     sendToken(user, 201, res);
-    const decryptedEmail = user.getDecryptedEmail();
     
     await sendVerificationEmail(decryptedEmail, verificationToken);
 
