@@ -255,10 +255,15 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
   const [editablePhone, setEditablePhone] = useState(
     pinContactInfo.phone || '',
   );
+  const [editableEmail, setEditableEmail] = useState(
+    pinContactInfo.email || '',
+  );
+
 
   useEffect(() => {
     setEditableDescription(pinDescription || '');
     setEditablePhone(pinContactInfo.phone || '');
+    setEditableEmail(pinContactInfo.email || '');
   }, [pinDescription, pinContactInfo]);
 
   const handleSavePin = async () => {
@@ -276,7 +281,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   description: editableDescription || localPin.description,
                   contactInfo: {
                     phone: editablePhone || localPin.contactInfo.phone,
-                    email: pins.contactInfo.email || localPin.contactInfo.email,
+                    email: editableEmail || localPin.contactInfo.email,
                   },
                   latitude,
                   longitude,
@@ -298,7 +303,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
             longitude,
             {
               phone: editablePhone || localPin.contactInfo.phone,
-              email: localPin.email,
+              email: editableEmail || localPin.contactInfo.email,
             },
             editedImage || localPin.image.url,
             localPin.openingHours || 'N/A',
@@ -306,11 +311,14 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
         );
 
         Alert.alert('Success', 'Pin updated successfully!');
+        closeModals();
       }
     } catch (error) {
       console.error('Error saving pin:', error);
       Alert.alert('Error', 'Could not save the pin');
     }
+
+
   };
 
   const saveReviewsToAsyncStorage = async (updatedReviews: any[]) => {
@@ -355,32 +363,40 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
   // Add a new review
   const handleAddReview = async () => {
-    // Check if the user already submitted a review
-    if (reviews.some(review => review.userId === user._id)) {
-      alert('You have already submitted a review.');
-      return;
+    // Validate the review input
+    if (!newReview.trim() || !newRating) {
+      console.error('Review text and rating are required');
+      return; // Prevent dispatching if validation fails
+    }
+
+    const ratingValue = parseFloat(newRating);
+    if (ratingValue < 1 || ratingValue > 5) {
+      console.error('Rating must be between 1 and 5');
+      return; // Prevent dispatching if rating is out of bounds
     }
 
     const newReviewObject = {
-      pinId: pins._id, // Corrected pin ID reference
-      userId: user._id, // Pass userId directly
-      name: user.name, // Pass name directly
-      image: user.avatar.url, // Pass image directly
-      reviewText: newReview, // Correctly named
-      ratings: Number(newRating), // Ensure number type
-      createdAt: new Date().toISOString(),
+      pinId: pins._id,
+      userId: user._id,
+      name: user.name,
+      image: user.avatar.url,
+      reviewText: newReview,
+      ratings: ratingValue,
+      createdAt: new Date().toISOString(), // Add createdAt timestamp
     };
 
-    // Dispatch review action with correctly structured data
-    await dispatch(addReviewAction(pins._id, newReviewObject));
+    try {
+      await dispatch(addReviewAction(pins._id, newReviewObject));
+      // Save the new review locally
+      const updatedReviews = [...reviews, newReviewObject];
+      await saveReviewsToAsyncStorage(updatedReviews);
 
-    // Save the new review locally
-    const updatedReviews = [...reviews, newReviewObject];
-    await saveReviewsToAsyncStorage(updatedReviews);
-
-    // Reset input fields
-    setNewReview('');
-    setNewRating('');
+      // Reset input fields
+      setNewReview('');
+      setNewRating('');
+    } catch (error) {
+      console.error('Error adding review:', error);
+    }
   };
 
   // Modify an existing review
@@ -812,7 +828,6 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
                   <Text style={styles.textTitle}>Description:</Text>
                   <TextInput
-                    defaultValue={pins.description} // Use value instead of defaultValue
                     onChangeText={setEditableDescription}
                     multiline={true}
                     numberOfLines={4}
@@ -823,13 +838,22 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   <Text style={styles.textTitle}>Phone Number:</Text>
 
                   <TextInput
-                    defaultValue={pins.contactInfo.phone} // Use value instead of defaultValue
                     onChangeText={setEditablePhone}
                     placeholder="Phone"
                     style={styles.descriptionInput}
                     keyboardType="phone-pad"
                     maxLength={15}
                     textContentType="telephoneNumber"
+                  />
+
+                  <Text style={styles.textTitle}>Email:</Text>
+
+                  <TextInput
+                    onChangeText={setEditableEmail}
+                    placeholder="Email"
+                    style={styles.descriptionInput}
+                    keyboardType="email-address"
+                    textContentType="emailAddress"
                   />
 
                   {/* Save and Cancel buttons */}
@@ -1040,14 +1064,16 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                 Reviews
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveTab('Analytics')}>
-              <Text
-                style={
-                  activeTab === 'Analytics' ? styles.activeTab : styles.tab
-                }>
-                Analytics
-              </Text>
-            </TouchableOpacity>
+            {pins.createdBy === user._id && (
+              <TouchableOpacity onPress={() => setActiveTab('Analytics')}>
+                <Text
+                  style={
+                    activeTab === 'Analytics' ? styles.activeTab : styles.tab
+                  }>
+                  Analytics
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {activeTab === 'Details' && (
@@ -1063,18 +1089,18 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                   <Text style={styles.contact}>Contacts</Text>
                   <View style={styles.contactContainer}>
                     <View style={styles.contactContactContainer}>
-                      <TouchableOpacity onPress={handleEmailClick}>
+                      <TouchableOpacity style={styles.submitButtonContainer} onPress={handleEmailClick}>
                         <Image
                           style={styles.contactImage}
                           source={require('../assets/email.png')}
                         />
                         <Text style={styles.contactInfoText}>
-                          {user.email}
+                          {editableEmail ? editableEmail : pinContactInfo.email}
                         </Text>
                       </TouchableOpacity>
                     </View>
                     <View style={styles.contactContactContainer}>
-                      <TouchableOpacity onPress={handlePhoneClick}>
+                      <TouchableOpacity style={styles.submitButtonContainer}onPress={handlePhoneClick}>
                         <Image
                           style={styles.contactImage}
                           source={require('../assets/phone.png')}
@@ -1453,6 +1479,10 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 };
 
 const styles = StyleSheet.create({
+  submitButtonContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
   descriptionInput: {
     borderWidth: 1,
     borderColor: '#017E5E',
@@ -1462,7 +1492,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   textTitle: {
-    marginTop: 15,
+    marginTop: 5,
     fontSize: 14,
     marginBottom: 5,
     fontWeight: '600',
@@ -1842,6 +1872,7 @@ const styles = StyleSheet.create({
   contactInfoText: {
     marginLeft: 10,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   contactInfoContainer: {
     alignItems: 'center',
@@ -1859,7 +1890,7 @@ const styles = StyleSheet.create({
   contactContactContainer: {
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'center',
     width: '45%',
   },
   contactContainer: {

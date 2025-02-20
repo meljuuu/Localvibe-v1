@@ -205,25 +205,15 @@ export const addReviewAction =
   ) =>
     async (dispatch: Dispatch<any>) => {
       try {
-        dispatch({
-          type: 'addReviewRequest',
-        });
+        dispatch({ type: "addReviewRequest" });
 
-        // Validate required fields
-        if (!reviewData.name || !reviewData.image) {
-          throw new Error('User name and image are required');
+        if (!reviewData.name || !reviewData.image || !pinId) {
+          throw new Error("User name, image, and pin ID are required");
         }
 
-        // Log the data being sent to the server
-        console.log('Data being sent to add review:', {
-          pinId,
-          ...reviewData,
-        });
-
-        const token = await AsyncStorage.getItem('token');
-
+        const token = await AsyncStorage.getItem("token");
         if (!token) {
-          throw new Error('Authentication token not found');
+          throw new Error("Authentication token not found");
         }
 
         const { data } = await axios.post(
@@ -239,26 +229,26 @@ export const addReviewAction =
           {
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
-          },
+          }
         );
 
-        dispatch({
-          type: 'addReviewSuccess',
-          payload: data.pin,
-        });
+        dispatch({ type: "addReviewSuccess", payload: data.pin });
       } catch (error: any) {
-        console.error('Error in addReviewAction:', {
+        console.error("Error in addReviewAction:", {
           message: error.response?.data?.message || error.message,
           status: error.response?.status,
-          data: error.response?.data
+          data: error.response?.data,
         });
+
         dispatch({
-          type: 'addReviewFailed',
+          type: "addReviewFailed",
           payload: error.response?.data?.message || error.message,
         });
       }
     };
+
 
 export const modifyReviewAction =
   (

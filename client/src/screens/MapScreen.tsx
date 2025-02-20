@@ -345,6 +345,7 @@ const MapScreen = ({navigation}: Props) => {
 
   const [businessName, setBusinessName] = useState('');
   const [description, setDescription] = useState('');
+  const [email, setEmail] = useState('');
   const [category, setCategory] = useState('');
   const [contactInfo, setContactInfo] = useState({
     phone: '',
@@ -1614,7 +1615,7 @@ const decodePolyline = encoded => {
                   data={categories}
                   setSelected={setCategory}
                   boxStyles={{borderColor: '#017E5E', height: 45}}
-                  dropdownStyles={{backgroundColor: '#fff', height: 170}}
+                  dropdownStyles={{backgroundColor: '#fff', height: 250}}
                   defaultOption={{key: 'default', value: 'Others'}}
                 />
               </View>
@@ -1631,6 +1632,19 @@ const decodePolyline = encoded => {
                   onBlur={() => setIsInputFocused(false)}
                 />
               </View>
+            </View>
+
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.fillInfoText}>Email</Text>
+              <TextInput
+                style={styles.phoneBox}
+                value={contactInfo.email}
+                onChangeText={text => 
+                  setContactInfo({ ...contactInfo, email: text })
+                }
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+              />
             </View>
 
             <View style={styles.submitButtonContainer}>
@@ -2020,7 +2034,7 @@ const styles = StyleSheet.create({
   },
 
   fillInfoContainer: {
-    height: 600,
+    height: 700,
     width: 380,
     backgroundColor: '#fff',
     padding: 20,

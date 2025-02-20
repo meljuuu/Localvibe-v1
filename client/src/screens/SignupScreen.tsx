@@ -278,7 +278,7 @@ const SignupScreen = ({navigation}: Props) => {
                 <Text style={styles.signUpText}>Register</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <TouchableOpacity onPress={() => navigation.navigate('VerifyEmail')}>
               <View style={styles.signInButton}>
                 <Text style={styles.signInText}>Back</Text>
               </View>
