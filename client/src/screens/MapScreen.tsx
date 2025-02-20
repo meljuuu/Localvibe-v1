@@ -1544,12 +1544,12 @@ const decodePolyline = encoded => {
       )}
       {!userHasPin &&
         !isAddingPin &&
-        (user.accountType === 'business' ||
-          user.accountType === 'prembusiness') && (
+        (user.accountType === 'business' || user.accountType === 'prembusiness') &&
+        (!Array.isArray(localPins) || localPins.length === 0 || !localPins.some(pin => pin.createdBy === user._id) && (
           <TouchableOpacity style={styles.addButton} onPress={handleAddPin}>
             <Text style={styles.addButtonText}>Add Store</Text>
           </TouchableOpacity>
-        )}
+        ))}
       {isAddingPin && (
         <View style={styles.confirmButtons}>
           <TouchableOpacity
@@ -1565,185 +1565,191 @@ const decodePolyline = encoded => {
         </View>
       )}
       <RNModal visible={isAddingForm} animationType="slide" transparent>
-        <View
-          style={[
-            styles.fillInfoContainer,
-            isInputFocused && {
-              position: 'absolute',
-              alignSelf: 'center',
-            },
-            {height: 600, top: '15%'},
-          ]}>
-          <View style={styles.textContainer1}>
-            <Text style={styles.modalText}>Your business info</Text>
-          </View>
-          <TouchableOpacity style={styles.profileIcon} onPress={uploadImage}>
-            <Image
-              style={styles.profileImage}
-              source={{
-                uri: profileImage,
-              }}
-            />
-            <Image
-              style={styles.editProfile}
-              source={require('../assets/editImage.png')}
-            />
-          </TouchableOpacity>
-
-          <View style={styles.businessNameContainer}>
-            <Text style={styles.fillInfoText}>Business Name</Text>
-            <TextInput
-              style={styles.businessNameBox}
-              value={businessName}
-              onChangeText={text => setBusinessName(text)}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
-            />
-          </View>
-
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.fillInfoText}>Description</Text>
-            <TextInput
-              multiline={true}
-              numberOfLines={4}
-              style={styles.descriptionBox}
-              value={description}
-              onChangeText={text => setDescription(text)}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
-            />
-          </View>
-
-          <View style={styles.categoryPhoneContainer}>
-            <View style={styles.categoryContainer}>
-              <Text style={styles.fillInfoText}>Category</Text>
-              <SelectList
-                data={categories}
-                setSelected={setCategory}
-                boxStyles={{borderColor: '#017E5E', height: 45}}
-                dropdownStyles={{backgroundColor: '#fff', height: 170}}
-                defaultOption={{key: 'default', value: 'Others'}}
-              />
+        <View style={styles.modalOverlay}>
+          <View style={styles.fillInfoContainer}>
+            <View style={styles.textContainer1}>
+              <Text style={styles.modalText}>Your business info</Text>
             </View>
-            <View style={styles.phoneContainer}>
-              <Text style={styles.fillInfoText}>Phone</Text>
+            <TouchableOpacity style={styles.profileIcon} onPress={uploadImage}>
+              <Image
+                style={styles.profileImage}
+                source={{
+                  uri: profileImage,
+                }}
+              />
+              <Image
+                style={styles.editProfile}
+                source={require('../assets/editImage.png')}
+              />
+            </TouchableOpacity>
+
+            <View style={styles.businessNameContainer}>
+              <Text style={styles.fillInfoText}>Business Name</Text>
               <TextInput
-                style={styles.phoneBox}
-                placeholder="Phone"
-                value={contactInfo.phone}
-                onChangeText={text =>
-                  setContactInfo({...contactInfo, phone: text})
-                }
+                style={styles.businessNameBox}
+                value={businessName}
+                onChangeText={text => setBusinessName(text)}
                 onFocus={() => setIsInputFocused(true)}
                 onBlur={() => setIsInputFocused(false)}
               />
             </View>
-          </View>
 
-          <View style={styles.submitButtonContainer}>
-            <TouchableOpacity style={styles.submitCancel} onPress={handleNext}>
-              <Text style={styles.submitText}>Next</Text>
-            </TouchableOpacity>
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.fillInfoText}>Description</Text>
+              <TextInput
+                multiline={true}
+                numberOfLines={4}
+                style={styles.descriptionBox}
+                value={description}
+                onChangeText={text => setDescription(text)}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+              />
+            </View>
 
-            <TouchableOpacity
-              style={styles.submitCancel}
-              onPress={() => setIsAddingForm(false)}>
-              <Text style={styles.submitText}>Cancel</Text>
-            </TouchableOpacity>
+            <View style={styles.categoryPhoneContainer}>
+              <View style={styles.categoryContainer}>
+                <Text style={styles.fillInfoText}>Category</Text>
+                <SelectList
+                  data={categories}
+                  setSelected={setCategory}
+                  boxStyles={{borderColor: '#017E5E', height: 45}}
+                  dropdownStyles={{backgroundColor: '#fff', height: 170}}
+                  defaultOption={{key: 'default', value: 'Others'}}
+                />
+              </View>
+              <View style={styles.phoneContainer}>
+                <Text style={styles.fillInfoText}>Phone</Text>
+                <TextInput
+                  style={styles.phoneBox}
+                  placeholder="Phone"
+                  value={contactInfo.phone}
+                  onChangeText={text =>
+                    setContactInfo({...contactInfo, phone: text})
+                  }
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
+                />
+              </View>
+            </View>
+
+            <View style={styles.submitButtonContainer}>
+              <TouchableOpacity
+                style={styles.submitCancel}
+                onPress={handleNext}>
+                <Text style={styles.submitText}>Next</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.submitCancel}
+                onPress={() => setIsAddingForm(false)}>
+                <Text style={styles.submitText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </RNModal>
       <Modal visible={isAddingOpeningHours} animationType="slide" transparent>
-        <View style={styles.fillInfoContainer}>
-          <View style={styles.textContainer1}>
-            <Text style={styles.modalText}>Business Opening Hours</Text>
-          </View>
+        <View style={styles.modalOverlay}>
+          <View style={styles.fillInfoContainer1}>
+            <View style={styles.textContainer1}>
+              <Text style={styles.modalText}>Business Opening Hours</Text>
+            </View>
 
-          <ScrollView contentContainerStyle={styles.scrollViewContent}>
-            <Text style={styles.daySelectionTitle}>Days Open:</Text>
-            <View
-              style={[
-                styles.daySelectionContainer,
-                {marginTop: 0, borderWidth: 0},
-              ]}>
-              {Object.keys(weekHours).map(day => (
-                <TouchableOpacity
-                  key={day}
-                  style={[
-                    styles.daySelectionContainer,
-                    {
-                      backgroundColor: selectedDays.includes(day)
-                        ? '#017E5E'
-                        : 'transparent',
-                    },
-                  ]}
-                  onPress={() => toggleDaySelection(day)}>
-                  <Text
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
+              <Text style={styles.daySelectionTitle}>Days Open</Text>
+              <View
+                style={[
+                  styles.daySelectionContainer,
+                  {marginTop: 0, borderWidth: 0},
+                ]}>
+                {Object.keys(weekHours).map(day => (
+                  <TouchableOpacity
+                    key={day}
                     style={[
-                      styles.dayText,
-                      {color: selectedDays.includes(day) ? 'white' : 'black'},
-                    ]}>
-                    {day}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                      styles.daySelectionContainer,
+                      {
+                        backgroundColor: selectedDays.includes(day)
+                          ? '#017E5E'
+                          : 'transparent',
+                        borderColor: selectedDays.includes(day)
+                          ? 'black'
+                          : '#acacac', // Set border color based on selection
+                        borderWidth: 1, // Ensure the border width is set
+                      },
+                    ]}
+                    onPress={() => toggleDaySelection(day)}>
+                    <Text
+                      style={[
+                        styles.dayText,
+                        {
+                          color: selectedDays.includes(day)
+                            ? 'white'
+                            : '#cecece',
+                        },
+                      ]}>
+                      {day}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+
+            <View style={styles.timePickerContainer}>
+              <Text
+                style={[
+                  styles.daySelectionTitle,
+                  {marginTop: 31, marginBottom: 10},
+                ]}>
+                Business Hours
+              </Text>
+
+              <View style={styles.timePicker}>
+                <TimePicker
+                  label="Opening Time"
+                  value={
+                    selectedDays.length > 0 && weekHours[selectedDays[0]]?.open
+                      ? format(weekHours[selectedDays[0]].open, 'hh:mm a')
+                      : ''
+                  }
+                  onPress={() => showTimePickerForDay('open')}
+                />
+
+                <Text style={styles.dashLine}>-</Text>
+
+                <TimePicker
+                  label="Closing Time"
+                  value={
+                    selectedDays.length > 0 && weekHours[selectedDays[0]]?.close
+                      ? format(weekHours[selectedDays[0]].close, 'hh:mm a')
+                      : ''
+                  }
+                  onPress={() => showTimePickerForDay('close')}
+                />
+              </View>
             </View>
-          </ScrollView>
 
-          <View style={styles.timePicker}>
-            <Text
-              style={[
-                styles.daySelectionTitle,
-                {marginTop: 31, marginBottom: 10},
-              ]}>
-              Business Hours:
-            </Text>
-
-            <View style={styles.timePicker}>
-              <TimePicker
-                label="Opening Time"
-                value={
-                  selectedDays.length > 0 && weekHours[selectedDays[0]]?.open
-                    ? format(weekHours[selectedDays[0]].open, 'hh:mm a')
-                    : ''
-                }
-                onPress={() => showTimePickerForDay('open')}
+            {showTimePicker && (
+              <DateTimePicker
+                value={selectedTime}
+                mode="time"
+                display="spinner"
+                onChange={handleTimeChange}
               />
+            )}
 
-              <Text style={styles.dashLine}>-</Text>
-
-              <TimePicker
-                label="Closing Time"
-                value={
-                  selectedDays.length > 0 && weekHours[selectedDays[0]]?.close
-                    ? format(weekHours[selectedDays[0]].close, 'hh:mm a')
-                    : ''
-                }
-                onPress={() => showTimePickerForDay('close')}
-              />
+            <View style={styles.submitButtonContainer}>
+              <TouchableOpacity
+                style={styles.submitCancel}
+                onPress={handleSubmit}>
+                <Text style={styles.submitText}>Submit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.submitCancel}
+                onPress={() => setIsAddingOpeningHours(false)}>
+                <Text style={styles.submitText}>Cancel</Text>
+              </TouchableOpacity>
             </View>
-          </View>
-
-          {showTimePicker && (
-            <DateTimePicker
-              value={selectedTime}
-              mode="time"
-              display="spinner"
-              onChange={handleTimeChange}
-            />
-          )}
-
-          <View style={styles.submitButtonContainer}>
-            <TouchableOpacity
-              style={styles.submitCancel}
-              onPress={handleSubmit}>
-              <Text style={styles.submitText}>Submit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.submitCancel}
-              onPress={() => setIsAddingOpeningHours(false)}>
-              <Text style={styles.submitText}>Cancel</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1752,14 +1758,17 @@ const decodePolyline = encoded => {
 };
 
 const styles = StyleSheet.create({
-  timePicker:{
+  timePickerContainer:{
+    alignItems: 'center',
+  },
+  timePicker: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    marginHorizontal: '7%',
+    width: '70%',
   },
-  dashLine:{
+  dashLine: {
     fontSize: 25,
     fontWeight: 'bold',
   },
@@ -1767,6 +1776,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 26,
+    alignSelf: 'center',
   },
   daySelectionContainer: {
     display: 'flex',
@@ -2008,17 +2018,25 @@ const styles = StyleSheet.create({
     top: 80,
     left: 190,
   },
+
   fillInfoContainer: {
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    marginBottom: 'auto',
-    marginTop: 'auto',
+    height: 600,
     width: 380,
     backgroundColor: '#fff',
     padding: 20,
     elevation: 10,
     borderColor: '#cecece',
     borderWidth: 1,
+  },
+  fillInfoContainer1: {
+    height: 350,
+    width: '90%',
+    backgroundColor: '#fff',
+    padding: 20,
+    elevation: 10,
+    borderColor: '#cecece',
+    borderWidth: 1,
+    borderRadius: 10,
   },
   textContainer1: {
     width: '100%',

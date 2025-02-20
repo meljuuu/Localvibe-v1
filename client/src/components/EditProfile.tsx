@@ -33,6 +33,8 @@ const EditProfile = ({navigation}: Props) => {
   });
 
   const [isFocused, setIsFocused] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(true); // State to manage password visibility
+  const [passwordInput, setPasswordInput] = useState(''); // State to manage password input
 
   const handleSubmitHandler = async () => {
     if (userData.name.length !== 0 && userData.userName.length !== 0) {
@@ -181,9 +183,13 @@ const EditProfile = ({navigation}: Props) => {
 
                 <Text style={styles.label}>Password</Text>
                 <TextInput
-                  onChangeText={e => setUserData({...userData, password: e})}
+                  onChangeText={e => {
+                    setUserData({...userData, password: e});
+                    setIsPasswordVisible(e.length === 0); // Show password input when there's no text
+                  }}
                   placeholder="Change your password..."
                   placeholderTextColor={'#000'}
+                  secureTextEntry={!isPasswordVisible} // Use secureTextEntry based on state
                   style={[styles.input]}
                   onFocus={handleFocus} // Trigger focus handler
                   onBlur={handleBlur} // Trigger blur handler

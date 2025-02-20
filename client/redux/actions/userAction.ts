@@ -297,3 +297,25 @@ export const unfollowUserAction =
     }
   };
 
+// Action to get user by ID
+export const getUserById = (userId) => async (dispatch) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const { data } = await axios.get(`${URI}/get-user-by-id/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    dispatch({
+      type: 'getUserByIdSuccess',
+      payload: data.user, // Assuming the server sends back the user data
+    });
+  } catch (error) {
+    dispatch({
+      type: 'getUserByIdFailed',
+      payload: error.response?.data?.message || 'Failed to fetch user',
+    });
+  }
+};
+

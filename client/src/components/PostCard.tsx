@@ -10,12 +10,13 @@ import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {Image} from 'react-native';
 import getTimeDuration from '../common/TimeGenerator';
-import {Share} from 'react-native'; // For sharing functionality
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   addLikes,
   getAllPosts,
   removeLikes,
+  addShare,
+  removeShare,
 } from '../../redux/actions/postAction';
 import axios from 'axios';
 import {URI} from '../../redux/URI';
@@ -24,7 +25,7 @@ import {
   removeInteraction,
   updateInteraction,
 } from '../../redux/actions/userAction';
-import {createOrUpdateReportAction} from '../../redux/actions/reportAction'; 
+import {createOrUpdateReportAction} from '../../redux/actions/reportAction';
 type Props = {
   navigation: any;
   item: any;
@@ -38,9 +39,8 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
   const {posts} = useSelector((state: any) => state.post);
   const dispatch = useDispatch();
   const {pins} = useSelector((state: any) => state.pin);
-  const userPin = pins.find(
-    (pin: {createdBy: any}) => pin.createdBy === item.user._id,
-  );
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [userInfo, setUserInfo] = useState({
     name: '',
     avatar: {
@@ -49,7 +49,6 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
   });
   const time = item?.createdAt;
   const formattedDuration = getTimeDuration(time);
- const [isShareActive, setIsShareActive] = useState(false);
   const profileHandler = async (e: any) => {
     await axios
       .get(`${URI}/get-user/${e._id}`, {
@@ -82,6 +81,23 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
     }
   };
 
+  const [isShareActivate, setIsShareActivate] = useState(false);
+
+  const isShareActive =
+    Array.isArray(posts.shares) &&
+    posts.shares.some((share: {userId: string}) => share.userId === user._id);
+
+  const shareHandler = () => {
+    if (isShareActivate) {
+      setIsShareActivate(false);
+      console.log('Share removed');
+      dispatch(removeShare({postId: postId ? postId : item._id, posts, user})); // Add share
+    } else {
+      setIsShareActivate(true);
+      console.log('Share added');
+      dispatch(addShare({postId: postId ? postId : item._id, posts, user})); // Add share
+    }
+  };
   const deletePostHandler = async (e: any) => {
     await axios
       .delete(`${URI}/delete-post/${e}`, {
@@ -93,36 +109,6 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
         getAllPosts()(dispatch);
       });
   };
-useEffect(() => {
-  // Load share state from AsyncStorage when the component mounts
-  const loadShareState = async () => {
-    const sharedStatus = await AsyncStorage.getItem(`sharedPost_${item._id}`);
-    if (sharedStatus === 'true') {
-      setIsShareActive(true);
-    }
-  };
-  loadShareState(); // Check share status on mount
-}, [item._id]);
-
-const shareHandler = async () => {
-  try {
-    // Share the post
-    await Share.share({
-      message: `Check out this post: ${item.title}`,
-    });
-
-    // Update the share status in local state
-    if (isShareActive) {
-      setIsShareActive(false);
-      await AsyncStorage.removeItem(`sharedPost_${item._id}`); // Remove shared status
-    } else {
-      setIsShareActive(true);
-      await AsyncStorage.setItem(`sharedPost_${item._id}`, 'true'); // Save shared status
-    }
-  } catch (error) {
-    alert('Error sharing post: ' + error.message);
-  }
-};
 
   useEffect(() => {
     if (users) {
@@ -134,6 +120,18 @@ const shareHandler = async () => {
     }
   }, [users]);
 
+  useEffect(() => {
+    const userPin = pins.find(
+      (pin: {createdBy: any; latitude: number; longitude: number}) =>
+        pin.createdBy === item.user._id,
+    );
+
+    if (userPin) {
+      setLatitude(userPin.latitude); // Store pin latitude
+      setLongitude(userPin.longitude); // Store pin longitude
+    }
+  }, [item.user._id, pins]); // Add dependencies to re-run effect when user ID or pins change
+
   const [openModal, setOpenModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const reportReasons = [
@@ -143,37 +141,41 @@ const shareHandler = async () => {
     {label: 'Illegal activities', value: 'illegal'},
     {label: 'Others', value: 'others'},
   ];
-const handleConfirmReport = () => {
-  console.log('Confirm Report button clicked'); // Log action initiation
+  const handleConfirmReport = () => {
+    console.log('Confirm Report button clicked'); // Log action initiation
 
-  if (selectedReason) {
-    console.log('Selected Reason:', selectedReason); // Log the selected reason
-    console.log('Reporting User ID:', user._id); // Log the reporting user's ID
-    console.log('Reported Item ID:', item._id); // Log the ID of the reported post
-    console.log('Report Type: post'); // Log the assumed type
-    console.log(selectedReason);
-    // Dispatch the report action
-    dispatch(
-      createOrUpdateReportAction(
-        user._id, // The reporting user's ID
-        item._id, // The ID of the reported post
-        'post', // Assuming this is a post
-        selectedReason, // The selected reason for reporting
-      ),
-    );
+    if (selectedReason) {
+      console.log('Selected Reason:', selectedReason); // Log the selected reason
+      console.log('Reporting User ID:', user._id); // Log the reporting user's ID
+      console.log('Reported Item ID:', item._id); // Log the ID of the reported post
+      console.log('Report Type: post'); // Log the assumed type
+      console.log(selectedReason);
+      const imageUrl = item.image && item.image.url ? item.image.url : 'N/A'; // Assign 'N/A' if image or url is undefined
+      console.log(imageUrl);
+      console.log(item.title);
+      // Dispatch the report action
+      dispatch(
+        createOrUpdateReportAction(
+          user._id, // The reporting user's ID
+          item._id, // The ID of the reported post
+          item.title, // reportTitle
+          imageUrl, // reportImage
+          'post', // itemType
+          selectedReason, // reason
+        ),
+      );
 
-    console.log('Report dispatched successfully.'); // Confirm dispatch success
+      console.log('Report dispatched successfully.'); // Confirm dispatch success
 
-    setOpenModal(false); // Close the modal
-    console.log('Modal closed.'); // Confirm modal closure
+      setOpenModal(false); // Close the modal
+      console.log('Modal closed.'); // Confirm modal closure
 
-    setSelectedReason(null); // Reset the selected reason
-    console.log('Selected reason reset to null.'); // Confirm reset
-  } else {
-    console.log('No reason selected. Report not dispatched.'); // Log if no reason was selected
-  }
-};
-
+      setSelectedReason(null); // Reset the selected reason
+      console.log('Selected reason reset to null.'); // Confirm reset
+    } else {
+      console.log('No reason selected. Report not dispatched.'); // Log if no reason was selected
+    }
+  };
 
   const handleCancelReport = () => {
     setOpenModal(false); // Close the modal without reporting
@@ -205,8 +207,8 @@ const handleConfirmReport = () => {
                 style={styles.openMap}
                 onPress={() =>
                   navigation.navigate('Map', {
-                    latitude: userPin.latitude,
-                    longitude: userPin.longitude,
+                    latitude: latitude,
+                    longitude: longitude,
                   })
                 }>
                 <Text style={styles.userNameText}>Open Map</Text>
@@ -246,7 +248,7 @@ const handleConfirmReport = () => {
         <View style={styles.reactsRow}>
           <TouchableOpacity onPress={() => reactsHandler(item)}>
             {item.likes.length > 0 ? (
-              <>
+              <View>
                 {item.likes.find((i: any) => i.userId === user._id) ? (
                   <Image
                     source={require('../assets/reactActive.png')}
@@ -258,7 +260,7 @@ const handleConfirmReport = () => {
                     style={styles.reactIcon}
                   />
                 )}
-              </>
+              </View>
             ) : (
               <Image
                 source={require('../assets/react.png')}
@@ -282,7 +284,10 @@ const handleConfirmReport = () => {
           <TouchableOpacity onPress={shareHandler}>
             <Image
               source={
-                isShareActive
+                Array.isArray(item.shares) &&
+                item.shares.some(
+                  (share: {userId: string}) => share.userId === user._id,
+                )
                   ? require('../assets/shareActive.png') // Active state image
                   : require('../assets/share.png') // Default state image
               }
