@@ -47,6 +47,20 @@ const pinSchema = new mongoose.Schema(
         type: String,
       },
     },
+    // Array to store visitors
+    visitors: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        created_at: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     // Timestamps for when the pin was created and updated
   },
   { timestamps: true }
