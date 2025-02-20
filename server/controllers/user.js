@@ -101,7 +101,6 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
   const { code } = req.body;
   try {
     const users = await User.findOne({
-      verificationToken: code,
       verificationTokenExpiresAt: { $gt: Date.now() },
     });
 
