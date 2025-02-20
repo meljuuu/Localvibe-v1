@@ -497,6 +497,7 @@ exports.updateShares = catchAsyncErrors(async (req, res, next) => {
               userId: req.user.id,
               userAvatar: req.user.avatar.url,
               postId,
+              createdAt: new Date(),
             },
           },
         }

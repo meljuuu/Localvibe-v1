@@ -14,34 +14,113 @@ import {logoutUser} from '../../redux/actions/userAction';
 import PostCard from '../components/PostCard';
 import {Title, Caption} from 'react-native-paper';
 import {FlatList} from 'react-native';
+import {URI} from '../../redux/URI';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
 
 const ProfileScreen = ({navigation}) => {
   const [activeTab, setActiveTab] = useState(0);
   const {user} = useSelector(state => state.user);
-  const {posts} = useSelector(state => state.post);
+  const [userData, setUserData] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [userPosts, setUserPosts] = useState([]);
   const [vibesData, setVibesData] = useState([]);
   const dispatch = useDispatch();
   const logoutHandler = async () => {
-    logoutUser()(dispatch);
+    try {
+      await AsyncStorage.clear(); // Clear all data in AsyncStorage
+      logoutUser()(dispatch); // Dispatch logout action
+      console.log('Logged out and AsyncStorage cleared');
+    } catch (error) {
+      console.error('Error clearing AsyncStorage:', error);
+    }
+  };
+
+  // Function to fetch posts from the server
+  const fetchPosts = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      console.error('No token found.'); // Log if no token is found
+      return; // Exit the function if no token
+    }
+
+    try {
+      const response = await fetch(`${URI}/get-all-posts`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`); // Throw an error for non-2xx responses
+      }
+
+      const data = await response.json();
+      if (data.posts) {
+        setPosts(data.posts); // Update local state with fetched posts
+      } else {
+        console.error('Posts not found in response data.'); // Log if posts are not found
+      }
+    } catch (error) {
+      console.error('Error fetching posts:', error.message); // Log any errors
+    }
+  };
+  // Function to log all items in AsyncStorage
+
+  // Function to fetch a single user by ID
+  const fetchUser = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      console.error('No token found.'); // Log if no token is found
+      return; // Exit the function if no token
+    }
+
+    try {
+      const response = await fetch(`${URI}/get-user/${user._id}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`); // Throw an error for non-2xx responses
+      }
+
+      const data = await response.json();
+      // Handle the fetched user data as needed
+      setUserData(data.user);
+    } catch (error) {
+      console.error('Error fetching user:', error.message); // Log any errors
+    }
   };
 
   useEffect(() => {
-    if (posts && user) {
-      const myPosts = posts.filter(post => post.user._id === user._id);
-      setUserPosts(myPosts);
-    }
-  }, [posts, user]);
+    // Fetch posts initially
+    fetchPosts();
+    fetchUser();
+
+    // Set up polling to fetch posts every 5 seconds
+    const interval = setInterval(() => {
+      fetchPosts();
+      fetchUser();
+    }, 10000); // Adjust the interval as needed
+
+    // Clear the interval on component unmount
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   // Fetch interactions and combine with posts
   useEffect(() => {
     if (posts && user) {
       // Filter posts by the current user
-      const myPosts = posts.filter(post => post.user._id === user._id);
+      const myPosts = posts.filter(post => post.user._id === userData._id);
       setUserPosts(myPosts); // Set user posts state
 
       // Filter interaction posts (vibes)
-      const interactionPosts = user?.interactions
+      const interactionPosts = userData.interactions
         ?.map(interaction => {
           const foundPost = posts.find(
             post => post._id === interaction.post_id,
@@ -51,9 +130,11 @@ const ProfileScreen = ({navigation}) => {
         .filter(post => post !== null); // Filter out null posts
 
       // Set vibes data, ensuring it doesn't include the user's posts
-      const vibes = interactionPosts
-        .filter(post => !myPosts.includes(post)) // Exclude user posts
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const vibes = Array.isArray(interactionPosts)
+        ? interactionPosts
+            .filter(post => !myPosts.includes(post)) // Exclude user posts
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        : []; // Default to an empty array if interactionPosts is not defined or not an array
 
       setVibesData(vibes); // Set vibes state
     } else {
@@ -61,9 +142,30 @@ const ProfileScreen = ({navigation}) => {
     }
   }, [posts, user]);
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
-  };
+  useEffect(() => {
+    if (posts && user) {
+      // Filter posts by the current user
+      const myPosts = posts.filter(post => post.user._id === user._id);
+
+      // Retrieve shared posts by the user
+      const sharedPosts = posts.filter(post =>
+        post.shares.some(share => share.userId === user._id),
+      );
+
+      // Combine myPosts with sharedPosts
+      const combinedPosts = [...myPosts, ...sharedPosts];
+
+      // Sort combinedPosts by createdAt date of post or shares
+      const sortedPosts = combinedPosts.sort((a, b) => {
+        const aDate = a.shares.length > 0 ? new Date(a.shares[0].createdAt) : new Date(a.createdAt);
+        const bDate = b.shares.length > 0 ? new Date(b.shares[0].createdAt) : new Date(b.createdAt);
+        return bDate - aDate; // Sort in descending order
+      });
+
+      // Set userPosts to sortedPosts
+      setUserPosts(sortedPosts); // Set user posts state
+    }
+  }, [posts, user]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,13 +196,18 @@ const ProfileScreen = ({navigation}) => {
 
           <View style={styles.subMainContainer}>
             <View style={styles.avatarContainer}>
-              <Image source={{uri: user?.avatar.url}} style={styles.avatar} />
+              <Image
+                source={{uri: userData.avatar?.url || user?.avatar?.url}}
+                style={styles.avatar}
+              />
             </View>
 
             <View style={styles.userInfoContainer}>
-              <Text style={styles.title}>{user?.name}</Text>
-              <Text style={styles.caption}>{user?.userName}</Text>
-              <Text style={styles.bio}>{user?.bio}</Text>
+              <Text style={styles.title}>{userData?.name || user?.name}</Text>
+              <Text style={styles.caption}>
+                {userData?.userName || user?.userName}
+              </Text>
+              <Text style={styles.bio}>{userData?.bio || user?.bio}</Text>
             </View>
 
             <View style={styles.buttonContainer}>
@@ -183,8 +290,9 @@ const ProfileScreen = ({navigation}) => {
 
             <View>
               {activeTab === 0 ? (
+                // Removed logging for active tab and userPosts length
                 userPosts.length > 0 ? (
-                  userPosts.map(item => <PostCard key={item._id} item={item} />)
+                  userPosts.map(item => <PostCard key={item._id} item={item} />) // Map over userPosts
                 ) : (
                   <Text>You have no posts yet!</Text>
                 )

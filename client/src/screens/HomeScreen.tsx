@@ -76,12 +76,25 @@ const HomeScreen = ({navigation, route}: Props) => {
     longitude: user?.longitude,
   });
 
+  // Function to store user ID in AsyncStorage
+  const storeUserId = async () => {
+    try {
+      if (user?._id) {
+        await AsyncStorage.setItem('userId', user._id);
+        console.log('User ID stored successfully:', user._id);
+      } else {
+        console.log('No user ID available to store');
+      }
+    } catch (error) {
+      console.error('Error storing user ID:', error);
+    }
+  };
+
   useEffect(() => {
     // Store the user's location in AsyncStorage when the component mounts
     storeUserLocation();
-  }, [userData]); // Store whenever userData changes
-
-  
+     storeUserId();
+  }, [userData, user]); // Store whenever userData changes
 
   // Function to store userData in AsyncStorage
   const storeUserLocation = async () => {
