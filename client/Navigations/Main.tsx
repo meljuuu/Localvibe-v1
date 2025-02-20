@@ -66,7 +66,7 @@ const Main = (props: Props) => {
   } else {
     return (
       <Stack.Navigator
-        initialRouteName="VerifyEmail"
+        initialRouteName="Home"
         screenOptions={{
           headerShown: false,
         }}>
