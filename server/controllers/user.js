@@ -84,8 +84,9 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
     await user.save(); 
 
     sendToken(user, 201, res);
-
-    await sendVerificationEmail(user.email, verificationToken);
+    
+    const decryptedEmail = user.getDecryptedEmail();
+    await sendVerificationEmail(decryptedEmail, verificationToken);
 
   } catch (error) {
     res.status(500).json({
