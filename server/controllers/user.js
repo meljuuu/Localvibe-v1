@@ -163,10 +163,17 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Please enter the email & password", 400));
     }
 
-    // Encrypt email before querying
-    const encryptedEmail = user.getEncryptedEmail();
-
-    const user = await User.findOne({ email: encryptedEmail }).select("+password");
+    // Find the user by encrypted email
+    const allUsers = await User.find();
+    
+    const user = allUsers.find(user => {
+      try {
+        return user.getDecryptedEmail() === email;
+      } catch (err) {
+        console.log(`Error decrypting email for user ${user._id}:`, err.message);
+        return false; // Skip if decryption fails
+      }
+    });
 
     if (!user) {
       return next(new ErrorHandler("User not found with this email & password", 401));
@@ -189,6 +196,7 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
     res.status(400).json({ success: false, message: error.message });
   }
 });
+
 
 //  Log out user
 exports.logoutUser = catchAsyncErrors(async (req, res, next) => {
