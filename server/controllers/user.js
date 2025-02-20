@@ -39,7 +39,9 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
     const { name, email, password, avatar, accountType } = req.body;
 
     const decryptedEmail = user.getDecryptedEmail();
-    let user = await User.findOne({ decryptedEmail });
+    const encryptedEmail = encryptData(email);
+    
+    let user = await User.findOne({ email: encryptedEmail });
 
     if (user) {
       return res
