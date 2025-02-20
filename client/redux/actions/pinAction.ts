@@ -362,7 +362,7 @@ export const addVisitorAction =
       dispatch({
         type: 'addVisitorRequest',
       });
-
+      
       const token = await AsyncStorage.getItem('token');
       console.log('Retrieved token:', token); // Log token retrieval
 

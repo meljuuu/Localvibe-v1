@@ -1043,7 +1043,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                           source={require('../assets/email.png')}
                         />
                         <Text style={styles.contactInfoText}>
-                          {pinContactInfo.email}
+                          {user.email}
                         </Text>
                       </TouchableOpacity>
                     </View>
