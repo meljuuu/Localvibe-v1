@@ -37,7 +37,7 @@ exports.updateUserCoor = catchAsyncErrors(async (req, res, next) => {
 exports.createUser = catchAsyncErrors(async (req, res, next) => {
   try {
     const { name, email, password, avatar, accountType } = req.body;
-
+    const { encryptData } = require("../utils/encryption");
     const encryptedEmail = encryptData(email);
 
     let user = await User.findOne({ email: encryptedEmail });
