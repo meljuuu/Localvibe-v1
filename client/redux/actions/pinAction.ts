@@ -1,6 +1,7 @@
+/* eslint-disable prettier/prettier */
 import axios from 'axios';
-import {URI} from '../URI';
-import {Dispatch} from 'react';
+import { URI } from '../URI';
+import { Dispatch } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // create pin
@@ -12,63 +13,63 @@ export const createPinAction =
     category: string,
     latitude: number,
     longitude: number,
-    contactInfo: {phone?: string; email?: string; website?: string},
+    contactInfo: { phone?: string; email?: string; website?: string },
     image: string,
     operatingHours: {
-      monday: {open: string; close: string};
-      tuesday: {open: string; close: string} /*...*/;
+      monday: { open: string; close: string };
+      tuesday: { open: string; close: string } /*...*/;
     }, // Correct field name
   ) =>
-  async (dispatch: Dispatch<any>) => {
-    try {
-      console.log('Creating pin with the following details:');
-      console.log('Created By:', createdBy);
-      console.log('Business Name:', businessName);
-      console.log('Description:', description);
-      console.log('Category:', category);
-      console.log('Latitude:', latitude);
-      console.log('Longitude:', longitude);
-      console.log('Contact Info:', contactInfo);
-      console.log('Image:', image);
-      console.log('Operating Hours:', operatingHours); // Correct field to log
+    async (dispatch: Dispatch<any>) => {
+      try {
+        console.log('Creating pin with the following details:');
+        console.log('Created By:', createdBy);
+        console.log('Business Name:', businessName);
+        console.log('Description:', description);
+        console.log('Category:', category);
+        console.log('Latitude:', latitude);
+        console.log('Longitude:', longitude);
+        console.log('Contact Info:', contactInfo);
+        console.log('Image:', image);
+        console.log('Operating Hours:', operatingHours); // Correct field to log
 
-      dispatch({
-        type: 'pinCreateRequest',
-      });
+        dispatch({
+          type: 'pinCreateRequest',
+        });
 
-      const token = await AsyncStorage.getItem('token');
+        const token = await AsyncStorage.getItem('token');
 
-      const {data} = await axios.post(
-        `${URI}/create-pin`,
-        {
-          createdBy,
-          businessName,
-          description,
-          category,
-          latitude,
-          longitude,
-          contactInfo,
-          image,
-          operatingHours, // Send the correct operatingHours here
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const { data } = await axios.post(
+          `${URI}/create-pin`,
+          {
+            createdBy,
+            businessName,
+            description,
+            category,
+            latitude,
+            longitude,
+            contactInfo,
+            image,
+            operatingHours, // Send the correct operatingHours here
           },
-        },
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
 
-      dispatch({
-        type: 'pinCreateSuccess',
-        payload: data.pin,
-      });
-    } catch (error: any) {
-      dispatch({
-        type: 'pinCreateFailed',
-        payload: error.response.data.message,
-      });
-    }
-  };
+        dispatch({
+          type: 'pinCreateSuccess',
+          payload: data.pin,
+        });
+      } catch (error: any) {
+        dispatch({
+          type: 'pinCreateFailed',
+          payload: error.response.data.message,
+        });
+      }
+    };
 
 export const modifyPinAction =
   (
@@ -78,62 +79,62 @@ export const modifyPinAction =
     category: string,
     latitude: number,
     longitude: number,
-    contactInfo: {phone?: string; email?: string; website?: string},
+    contactInfo: { phone?: string; email?: string; website?: string },
     image: string,
     openingHours: string, // Add openingHours here
   ) =>
-  async (dispatch: Dispatch<any>) => {
-    try {
-      dispatch({
-        type: 'pinModifyRequest',
-      });
+    async (dispatch: Dispatch<any>) => {
+      try {
+        dispatch({
+          type: 'pinModifyRequest',
+        });
 
-      const token = await AsyncStorage.getItem('token');
-      console.log('Token Retrieved:', token);
+        const token = await AsyncStorage.getItem('token');
+        console.log('Token Retrieved:', token);
 
-      const requestData = {
-        businessName,
-        description,
-        category,
-        latitude,
-        longitude,
-        contactInfo,
-        image,
-        openingHours,
-      };
+        const requestData = {
+          businessName,
+          description,
+          category,
+          latitude,
+          longitude,
+          contactInfo,
+          image,
+          openingHours,
+        };
 
-      console.log('Sending Request to Update Pin:', requestData);
+        console.log('Sending Request to Update Pin:', requestData);
 
-      const {data} = await axios.put(
-        `${URI}/update-pin/${pinId}`,
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const { data } = await axios.put(
+          `${URI}/update-pin/${pinId}`,
+          requestData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        },
-      );
+        );
 
-      console.log('Server Response:', data);
+        console.log('Server Response:', data);
 
-      dispatch({
-        type: 'pinModifySuccess',
-        payload: data.pin,
-      });
+        dispatch({
+          type: 'pinModifySuccess',
+          payload: data.pin,
+        });
 
-      console.log('Dispatch Success: Pin updated successfully');
-    } catch (error: any) {
-      console.error(
-        'Error Updating Pin:',
-        error.response?.data || error.message,
-      );
+        console.log('Dispatch Success: Pin updated successfully');
+      } catch (error: any) {
+        console.error(
+          'Error Updating Pin:',
+          error.response?.data || error.message,
+        );
 
-      dispatch({
-        type: 'pinModifyFailed',
-        payload: error.response?.data?.message || 'Unknown error occurred',
-      });
-    }
-  };
+        dispatch({
+          type: 'pinModifyFailed',
+          payload: error.response?.data?.message || 'Unknown error occurred',
+        });
+      }
+    };
 
 // get all pins
 export const getAllPins = () => async (dispatch: Dispatch<any>) => {
@@ -144,7 +145,7 @@ export const getAllPins = () => async (dispatch: Dispatch<any>) => {
 
     const token = await AsyncStorage.getItem('token');
 
-    const {data} = await axios.get(`${URI}/get-all-pins`, {
+    const { data } = await axios.get(`${URI}/get-all-pins`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -202,62 +203,62 @@ export const addReviewAction =
       ratings: number;
     },
   ) =>
-  async (dispatch: Dispatch<any>) => {
-    try {
-      dispatch({
-        type: 'addReviewRequest',
-      });
+    async (dispatch: Dispatch<any>) => {
+      try {
+        dispatch({
+          type: 'addReviewRequest',
+        });
 
-      // Validate required fields
-      if (!reviewData.name || !reviewData.image) {
-        throw new Error('User name and image are required');
-      }
+        // Validate required fields
+        if (!reviewData.name || !reviewData.image) {
+          throw new Error('User name and image are required');
+        }
 
-      // Log the data being sent to the server
-      console.log('Data being sent to add review:', {
-        pinId,
-        ...reviewData,
-      });
-
-      const token = await AsyncStorage.getItem('token');
-      
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-
-      const {data} = await axios.post(
-        `${URI}/add-review`,
-        {
+        // Log the data being sent to the server
+        console.log('Data being sent to add review:', {
           pinId,
-          userId: reviewData.userId,
-          name: reviewData.name,
-          image: reviewData.image,
-          reviewText: reviewData.reviewText,
-          ratings: reviewData.ratings,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+          ...reviewData,
+        });
 
-      dispatch({
-        type: 'addReviewSuccess',
-        payload: data.pin,
-      });
-    } catch (error: any) {
-      console.error('Error in addReviewAction:', {
-        message: error.response?.data?.message || error.message,
-        status: error.response?.status,
-        data: error.response?.data
-      });
-      dispatch({
-        type: 'addReviewFailed',
-        payload: error.response?.data?.message || error.message,
-      });
-    }
-  };
+        const token = await AsyncStorage.getItem('token');
+
+        if (!token) {
+          throw new Error('Authentication token not found');
+        }
+
+        const { data } = await axios.post(
+          `${URI}/add-review`,
+          {
+            pinId,
+            userId: reviewData.userId,
+            name: reviewData.name,
+            image: reviewData.image,
+            reviewText: reviewData.reviewText,
+            ratings: reviewData.ratings,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        dispatch({
+          type: 'addReviewSuccess',
+          payload: data.pin,
+        });
+      } catch (error: any) {
+        console.error('Error in addReviewAction:', {
+          message: error.response?.data?.message || error.message,
+          status: error.response?.status,
+          data: error.response?.data
+        });
+        dispatch({
+          type: 'addReviewFailed',
+          payload: error.response?.data?.message || error.message,
+        });
+      }
+    };
 
 export const modifyReviewAction =
   (
@@ -271,43 +272,43 @@ export const modifyReviewAction =
       ratings: number;
     },
   ) =>
-  async (dispatch: Dispatch<any>) => {
-    try {
-      dispatch({type: 'modifyReviewRequest'});
+    async (dispatch: Dispatch<any>) => {
+      try {
+        dispatch({ type: 'modifyReviewRequest' });
 
-      const token = await AsyncStorage.getItem('token');
+        const token = await AsyncStorage.getItem('token');
 
-      const {data} = await axios.put(
-        `${URI}/modify-review`,
-        {
-          pinId,
-          reviewId,
-          userId: reviewData.userId, // Ensures correct userId is passed
-          reviewText: reviewData.reviewText,
-          ratings: reviewData.ratings,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const { data } = await axios.put(
+          `${URI}/modify-review`,
+          {
+            pinId,
+            reviewId,
+            userId: reviewData.userId, // Ensures correct userId is passed
+            reviewText: reviewData.reviewText,
+            ratings: reviewData.ratings,
           },
-        },
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
 
-      dispatch({
-        type: 'modifyReviewSuccess',
-        payload: data.pin, // Updated pin with modified review
-      });
-    } catch (error: any) {
-      console.error(
-        'Modify review error:',
-        error.response?.data || error.message,
-      );
-      dispatch({
-        type: 'modifyReviewFailed',
-        payload: error.response?.data?.message || 'An error occurred',
-      });
-    }
-  };
+        dispatch({
+          type: 'modifyReviewSuccess',
+          payload: data.pin, // Updated pin with modified review
+        });
+      } catch (error: any) {
+        console.error(
+          'Modify review error:',
+          error.response?.data || error.message,
+        );
+        dispatch({
+          type: 'modifyReviewFailed',
+          payload: error.response?.data?.message || 'An error occurred',
+        });
+      }
+    };
 
 
 
@@ -315,20 +316,20 @@ export const modifyReviewAction =
 export const deleteReviewAction =
   (pinId: string, reviewId: string) => async (dispatch: Dispatch<any>) => {
     try {
-      dispatch({type: 'deleteReviewRequest'});
+      dispatch({ type: 'deleteReviewRequest' });
 
       const token = await AsyncStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication token not found');
       }
 
-      console.log('Attempting to delete review:', {pinId, reviewId});
+      console.log('Attempting to delete review:', { pinId, reviewId });
 
-      const {data} = await axios.delete(`${URI}/delete-review`, {
+      const { data } = await axios.delete(`${URI}/delete-review`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        data: {pinId, reviewId},
+        data: { pinId, reviewId },
       });
 
       console.log('Delete review response:', data);
@@ -354,50 +355,42 @@ export const deleteReviewAction =
 // Increment Visit Count
 
 // Add Visit Action
-export const addVisitorAction =
-  (pinId: string, userId: string) => async (dispatch: Dispatch<any>) => {
-    try {
-      console.log('Adding visitor with details:', {pinId, userId}); // Log inputs
+exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { pinId, userId } = req.body;
 
-      dispatch({
-        type: 'addVisitorRequest',
-      });
-      
-      const token = await AsyncStorage.getItem('token');
-      console.log('Retrieved token:', token); // Log token retrieval
-
-      const {data} = await axios.post(
-        `${URI}/add-visitor`,
-        {
-          pinId,
-          userId,
-          created_at: new Date().toISOString(), // Include created_at timestamp
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      console.log('Add visitor response:', data); // Log server response
-
-      dispatch({
-        type: 'addVisitorSuccess',
-        payload: {pinId, visitors: data.visitors}, // Updated visitors list
-      });
-    } catch (error: any) {
-      console.error(
-        'Error during addVisitorAction:',
-        error.response?.data?.message || error.message,
-      ); // Log error message
-      dispatch({
-        type: 'addVisitorFailed',
-        payload:
-          error.response?.data?.message || 'An unexpected error occurred.',
-      });
+    // Validate input
+    if (!pinId || !userId) {
+      return next(new ErrorHandler("Pin ID and User ID are required", 400));
     }
-  };
+
+    const pin = await Pin.findById(pinId);
+    if (!pin) {
+      return next(new ErrorHandler("Pin not found", 404));
+    }
+
+    // Ensure visitors is initialized as an array if it doesn't exist
+    if (!Array.isArray(pin.visitors)) {
+      pin.visitors = [];
+    }
+
+    // Prevent duplicate visitors
+    if (!pin.visitors.some(visitor => visitor.userId.toString() === userId)) {
+      pin.visitors.push({ userId, created_at: new Date() }); // Add userId and created_at
+      await pin.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Visitor added successfully",
+      visitors: pin.visitors,
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
+
 // Get Pin by ID Action
 export const getPinByIdAction =
   (pinId: string) => async (dispatch: Dispatch<any>) => {
@@ -408,7 +401,7 @@ export const getPinByIdAction =
 
       const token = await AsyncStorage.getItem('token');
 
-      const {data} = await axios.get(`${URI}/get-pin/${pinId}`, {
+      const { data } = await axios.get(`${URI}/get-pin/${pinId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -436,7 +429,7 @@ export const fetchAllPinsAction = () => async (dispatch: Dispatch<any>) => {
     const { data } = await axios.get(`${URI}/get-all-pins`, {
       headers: {
         Authorization: `Bearer ${token}`,
-      },  
+      },
     });
 
     dispatch({

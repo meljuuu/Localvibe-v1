@@ -305,7 +305,6 @@ exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
     }
 
     const pin = await Pin.findById(pinId);
-
     if (!pin) {
       return next(new ErrorHandler("Pin not found", 404));
     }
@@ -316,7 +315,7 @@ exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
     }
 
     // Prevent duplicate visitors
-    if (!pin.visitors.some(visitor => visitor.userId === userId)) {
+    if (!pin.visitors.some(visitor => visitor.userId.toString() === userId)) {
       pin.visitors.push({ userId, created_at: new Date() }); // Add userId and created_at
       await pin.save();
     }
