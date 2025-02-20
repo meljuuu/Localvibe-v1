@@ -156,42 +156,36 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 
 // Login User
 exports.loginUser = catchAsyncErrors(async (req, res, next) => {
-  const { email, password } = req.body;
   try {
+    const { email, password } = req.body;
+
     if (!email || !password) {
       return next(new ErrorHandler("Please enter the email & password", 400));
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    // Encrypt email before querying
+    const encryptedEmail = user.getEncryptedEmail();
+
+    const user = await User.findOne({ email: encryptedEmail }).select("+password");
 
     if (!user) {
-      return next(
-        new ErrorHandler("User is not find with this email & password", 401)
-      );
+      return next(new ErrorHandler("User not found with this email & password", 401));
     }
+
     const isPasswordMatched = await user.comparePassword(password);
 
     if (!isPasswordMatched) {
-      return next(
-        new ErrorHandler("User is not find with this email & password", 401)
-      );
+      return next(new ErrorHandler("User not found with this email & password", 401));
     }
 
-    const isVerified = user.isVerified;
-      if (!isVerified) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Email not verified" });
-      }
+    if (!user.isVerified) {
+      return res.status(400).json({ success: false, message: "Email not verified" });
+    }
 
-    sendToken(user, 201, res);
-
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-    });
+    // Send token & return response
+    sendToken(user, 200, res);
   } catch (error) {
-    console.log("error logging in", error);
+    console.log("Error logging in:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 });
