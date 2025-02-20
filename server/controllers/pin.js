@@ -310,6 +310,11 @@ exports.addVisitor = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("Pin not found", 404));
     }
 
+    // Ensure visitors is initialized as an array if it doesn't exist
+    if (!Array.isArray(pin.visitors)) {
+      pin.visitors = [];
+    }
+
     // Prevent duplicate visitors
     if (!pin.visitors.some(visitor => visitor.userId === userId)) {
       pin.visitors.push({ userId, created_at: new Date() }); // Add userId and created_at
