@@ -84,7 +84,7 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
     await user.save(); 
 
     sendToken(user, 201, res);
-    
+
     const decryptedEmail = user.getDecryptedEmail();
     await sendVerificationEmail(decryptedEmail, verificationToken);
 
@@ -100,10 +100,22 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
   const { code } = req.body;
   try {
-    const user = await User.findOne({
+    const users = await User.findOne({
       verificationToken: code,
       verificationTokenExpiresAt: { $gt: Date.now() },
     });
+
+    let user = null;
+    for (const potentialUser of users) {
+      if (potentialUser.verificationToken) {
+        const decryptedToken = potentialUser.getDecryptedVerificationToken();
+        if (decryptedToken === code) {
+          user = potentialUser;
+          break;
+        }
+      }
+    }
+
     if (!user) {
       return res.status(400).json({
         success: false,
