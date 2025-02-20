@@ -99,7 +99,7 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 
     sendToken(user, 201, res);
     
-    await sendVerificationEmail(decryptedEmail, verificationToken);
+    await sendVerificationEmail(email, verificationToken);
 
   } catch (error) {
     res.status(500).json({
