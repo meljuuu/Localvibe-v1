@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Alert,
   Image,
@@ -10,22 +11,42 @@ import {
   Modal,  
   ScrollView,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import CheckBox from '@react-native-community/checkbox';
+import { registerUser } from '../../redux/actions/userAction';
+import { useDispatch, useSelector } from 'react-redux';
 
 type Props = {
   navigation: any;
 };
 
-const SignupScreen = ({navigation}: Props) => {
+const SignupScreen = ({navigation, route}: Props) => {
   const backgroundImage = require('../assets/background.png');
   const logo = require('../assets/logo.png');
   const [isChecked, setIsChecked] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [avatar, setAvatar] = useState('');
+  const [accountType, setAccountType] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const {error, isAuthenticated} = useSelector((state: any) => state.user);
+
+  useEffect(() => {
+    if (route.params) {
+      const { name, avatar, accountType, email, password } = route.params;
+      if (name) setName(name);
+      if (avatar) setAvatar(avatar);
+      if (accountType) setAccountType(accountType);
+      if (email) setEmail(email);
+      if (password) setPassword(password);
+    }
+  }, [route.params]);
+
+  const dispatch = useDispatch();
+
   const handleTermsPress = () => {
     setIsModalVisible(true); 
   };
@@ -44,30 +65,37 @@ const SignupScreen = ({navigation}: Props) => {
     return passwordRegex.test(password);
   };
 
-  const handleSignUpPress = () => {
-    if (!validateEmail(email)) {
-      Alert.alert('Invalid email format');
-      return;
-    }
+  const handleSignUpPress = async () => {
+    try {
+      if (!validateEmail(email)) {
+        Alert.alert('Invalid email format');
+        return;
+      }
 
-    if (!validatePassword(password)) {
-      Alert.alert(
-        'Password must be at least 8 characters long and contain at least 1 letter and 1 number',
-      );
-      return;
-    }
+      if (!validatePassword(password)) {
+        Alert.alert('Password must be at least 8 characters long and contain at least 1 letter and 1 number');
+        return;
+      }
 
-    if (password !== confirmPassword) {
-      Alert.alert('Passwords do not match');
-      return;
+      await registerUser(name, email, password, avatar, accountType)(dispatch);
+      Alert.alert('Registration Successful!');
+      navigation.navigate('VerifyEmail');
+    } catch (error) {
+      console.error('An error occurred:', error);
+      Alert.alert('Error', 'An error occurred while processing your request.');
+      navigation.navigate('Signup');
     }
-
-    const valuesToPass = {
-      email,
-      password,
-    };
-    navigation.navigate('Signinfo', valuesToPass);
   };
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert(error);
+    }
+    if (isAuthenticated) {
+      Alert.alert('Account Creation Successful!');
+      navigation.navigate('VerifyEmail');
+    }
+  }, [error, isAuthenticated, navigation]);
 
   return (
     <View style={[styles.container, isFocused && styles.containerFocused]}>
@@ -207,7 +235,7 @@ const SignupScreen = ({navigation}: Props) => {
                   </Text>
                   <Text style={styles.modalTextText}>
                     {' '}
-                    o Accessing or tampering with LocalVibe’s security features
+                    o Accessing or tampering with LocalVibe's security features
                   </Text>
 
                   <Text style={styles.modalTextTitle}>
@@ -242,7 +270,7 @@ const SignupScreen = ({navigation}: Props) => {
                     6. Limitation of Liability
                   </Text>
                   <Text style={styles.modalText}>
-                    LocalVibe is provided on an “as-is” basis, and we make no
+                    LocalVibe is provided on an "as-is" basis, and we make no
                     guarantees regarding the app's functionality, security, or
                     reliability. We are not liable for any damages or losses
                     arising from your use of LocalVibe, including but not
@@ -275,7 +303,7 @@ const SignupScreen = ({navigation}: Props) => {
                   styles.signUpButton,
                   {backgroundColor: isChecked ? '#017E5E' : '#cccccc'},
                 ]}>
-                <Text style={styles.signUpText}>Register</Text>
+                <Text style={styles.signUpText}>Finish</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('VerifyEmail')}>

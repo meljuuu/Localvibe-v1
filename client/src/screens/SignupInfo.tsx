@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Alert,
   Image,
@@ -11,7 +12,7 @@ import {
 import React, {useEffect, useState} from 'react';
 import ImagePicker, {ImageOrVideo} from 'react-native-image-crop-picker';
 import {useDispatch, useSelector} from 'react-redux';
-import {registerUser} from '../../redux/actions/userAction';
+
 import {Picker} from '@react-native-picker/picker';
 
 type Props = {
@@ -19,18 +20,15 @@ type Props = {
   route: any;
 };
 
-const SignupScreen = ({navigation, route}: Props) => {
+const SignupScreen = ({navigation}: Props) => {
   const backgroundImage = require('../assets/2ndbackground.png');
   const logo = require('../assets/logo.png');
-  const dispatch = useDispatch();
-  const {error, isAuthenticated} = useSelector((state: any) => state.user);
 
   const [name, setName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [avatar, setAvatar] = useState('');
 
-  const {email = useState(''), password = useState('')} = route.params;
 
   const [accountType, setAccountType] = useState('personal');
 
@@ -54,27 +52,14 @@ const SignupScreen = ({navigation, route}: Props) => {
       });
   };
 
-  const submitHandler = async (e: any) => {
-    try {
-      await registerUser(name, email, password, avatar, accountType)(dispatch);
-      Alert.alert('Registration Successful!');
-      navigation.navigate('VerifyEmail');
-    } catch (error) {
-      console.error('An error occurred:', error);
-      Alert.alert('Error', 'An error occurred while processing your request.');
-      navigation.navigate('Signup');
-    }
+  const submitHandler = () => {
+    const userInfo = {
+      name,
+      avatar,
+      accountType,
+    };
+    navigation.navigate('Signup', userInfo);
   };
-
-  useEffect(() => {
-    if (error) {
-      Alert.alert(error);
-    }
-    if (isAuthenticated) {
-      Alert.alert('Account Creation Successful!');
-      navigation.navigate('VerifyEmail');
-    }
-  }, [error, isAuthenticated]);
 
   return (
     <View style={styles.container}>
@@ -154,7 +139,7 @@ const SignupScreen = ({navigation, route}: Props) => {
           </View>
 
           <TouchableOpacity onPress={submitHandler} style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>Finish</Text>
+            <Text style={styles.submitButtonText}>Register</Text>
           </TouchableOpacity>
         </View>
       </View>

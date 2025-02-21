@@ -97,7 +97,7 @@ const LoginScreen = ({navigation}: Props) => {
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              onPress={() => navigation.navigate('Signup')}
+              onPress={() => navigation.navigate('Signinfo')}
               style={styles.button1}>
               <Text style={styles.signupText}>Sign Up</Text>
             </TouchableOpacity>
