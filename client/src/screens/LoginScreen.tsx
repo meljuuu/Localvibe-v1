@@ -99,7 +99,7 @@ const LoginScreen = ({navigation}: Props) => {
             <TouchableOpacity
               onPress={() => navigation.navigate('Signinfo')}
               style={styles.button1}>
-              <Text style={styles.signupText}>Sign Up</Text>
+              <Text style={styles.signupText}>Register</Text>
             </TouchableOpacity>
           </View>
         </View>
