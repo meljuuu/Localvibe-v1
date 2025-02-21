@@ -1545,12 +1545,12 @@ const decodePolyline = encoded => {
       )}
       {!userHasPin &&
         !isAddingPin &&
-        (user.accountType === 'business' || user.accountType === 'prembusiness') &&
-        (!Array.isArray(localPins) || localPins.length === 0 || !localPins.some(pin => pin.createdBy === user._id) && (
+        (user?.accountType === 'business' || user?.accountType === 'prembusiness') &&
+        (!localPins || localPins.length === 0 || !localPins.some(pin => pin.createdBy === user._id)) && (
           <TouchableOpacity style={styles.addButton} onPress={handleAddPin}>
             <Text style={styles.addButtonText}>Add Store</Text>
           </TouchableOpacity>
-        ))}
+        )}
       {isAddingPin && (
         <View style={styles.confirmButtons}>
           <TouchableOpacity

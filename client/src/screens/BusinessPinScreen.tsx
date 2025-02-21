@@ -972,7 +972,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                     style={styles.profilePic}
                     source={{uri: pins.image.url}}
                   />
-                  {pins.isVerified && (
+                  {localPin?.isVerified && (
                     <View style={styles.verifiedContainer}>
                       <Image
                         style={styles.verifiedImage}
