@@ -22,6 +22,7 @@ import {
   modifyPinAction,
   modifyReviewAction,
   deleteReviewAction,
+  deletePinAction,
 } from '../../redux/actions/pinAction'; // Import the review actions
 import {createOrUpdateReportAction} from '../../redux/actions/reportAction';
 import axios from 'axios'; // Import axios
@@ -87,11 +88,8 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
   };
 
   useEffect(() => {
-    // Log localPins and pins to ensure they are available
 
-    // Ensure localPins and pins are available
     if (localPins.length > 0 && pins) {
-      // Find the localPin in localPins that matches pins._id
 
       if (localPin) {
         // Set the description and contact info
@@ -148,6 +146,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
   const [imageUrl, setImageUrl] = useState(null); // State for image URL
   const {user, token} = useSelector((state: any) => state.user);
   const [isEditing, setIsEditing] = useState(false);
+  const [deleteBusinessModal, setDeleteBusinessModal] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -531,6 +530,8 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
     setSelectedReason(null); // Reset the selected reason
   };
 
+
+
   useEffect(() => {
     if (
       localPins.length > 0 &&
@@ -549,6 +550,26 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
       console.log('localPins.pins or pins is empty or missing');
     }
   }, [localPins, pins]);
+
+  const deleteBusiness = () => {
+    console.log('Delete business button clicked'); // Log to confirm button click
+    setIsEditing(false); // Close the editing modal
+
+    // Add a slight delay before opening the delete modal
+    setTimeout(() => {
+      setDeleteBusinessModal(true); // Open the delete confirmation modal
+    }, 100); // Adjust the delay as needed (100 milliseconds in this case)
+  };
+
+  const confirmDelete = () => {
+    if (!localPin || !localPin._id) {
+      console.error('No pin found to delete');
+      return; // Exit if localPin is not defined
+    }
+
+    dispatch(deletePinAction(localPin._id)); // Dispatch the action
+    navigation.navigate('Map');
+  };
 
   // Function to get the current week number
   const getWeekNumber = (date: Date) => {
@@ -763,6 +784,35 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 
           <View style={styles.editImageContainer}>
             <Modal
+              visible={deleteBusinessModal}
+              animationType="slide"
+              transparent={true}
+              onRequestClose={() => setDeleteBusinessModal(false)}>
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                  <View style={styles.deleteBusinessModal}>
+                    <Text style={styles.deleteText}>
+                      Do you really want to <Text style={styles.boldText}>DELETE</Text> this business?
+                    </Text>
+                    <View style={styles.buttonContainer1}>
+                      <TouchableOpacity
+                        style={styles.confirmButton}
+                        onPress={confirmDelete}
+                      >
+                        <Text style={styles.buttonText}>Confirm</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={() => setDeleteBusinessModal(false)}
+                      >
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+            <Modal
               visible={isEditing}
               animationType="slide"
               transparent={true}
@@ -771,6 +821,13 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                 <View style={styles.modal}>
                   <View style={styles.textContainer}>
                     <Text style={styles.editText}>Edit Business Details</Text>
+
+                      <TouchableOpacity onPress={deleteBusiness} style={styles.deleteBusinessContainer}>
+                      <Image
+                        style={styles.deleteBusinessButton}
+                        source={require('../assets/delete.png')}
+                      />
+                      </TouchableOpacity>
                   </View>
                   <Text style={styles.textTitle}>Cover Photo:</Text>
 
@@ -932,7 +989,7 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
                         <TouchableOpacity
                           onPress={handleConfirmReport}
                           style={styles.confirmButton}>
-                          <Text style={styles.buttonText}>Confirm</Text>
+                          <Text style={styles.saveButton}>Confirm</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                           onPress={handleCancelReport}
@@ -1479,6 +1536,33 @@ const BusinessPinScreen = ({route, navigation}: Props) => {
 };
 
 const styles = StyleSheet.create({
+  
+  deleteText:{
+    textAlign: 'center',
+    fontSize: 15,
+  },
+  buttonContainer1:{
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
+  },
+  deleteBusinessModal:{
+    width: 300,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  deleteBusinessContainer:{
+    position: 'absolute',
+    top: -10,
+    left: 70,
+  },
+  deleteBusinessButton:{
+    height: 30,
+    resizeMode: 'contain',
+  },
   submitButtonContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -1514,6 +1598,8 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -2154,6 +2240,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     textAlign: 'justify',
     marginLeft: 15,
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: 'red',
   },
 });
 

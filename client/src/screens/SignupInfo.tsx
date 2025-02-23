@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import ImagePicker, {ImageOrVideo} from 'react-native-image-crop-picker';
-import {useDispatch, useSelector} from 'react-redux';
 
 import {Picker} from '@react-native-picker/picker';
 

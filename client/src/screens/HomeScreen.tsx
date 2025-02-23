@@ -76,6 +76,8 @@ const HomeScreen = ({navigation, route}: Props) => {
     longitude: user?.longitude,
   });
 
+  const [alertShown, setAlertShown] = useState(false);
+
   // Function to store user ID in AsyncStorage
   const storeUserId = async () => {
     try {
@@ -91,10 +93,17 @@ const HomeScreen = ({navigation, route}: Props) => {
   };
 
   useEffect(() => {
+    if (user && !user.isVerified) {
+      if (!alertShown) {
+        alert("You need to verify your email first");
+        setAlertShown(true);
+      }
+      navigation.replace('VerifyEmail');
+    }
     // Store the user's location in AsyncStorage when the component mounts
     storeUserLocation();
-     storeUserId();
-  }, [userData, user]); // Store whenever userData changes
+    storeUserId();
+  }, [userData, user, alertShown]);
 
   // Function to store userData in AsyncStorage
   const storeUserLocation = async () => {

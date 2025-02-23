@@ -120,7 +120,11 @@ const MapScreen = ({navigation}: Props) => {
         },
       });
       const data = await response.json();
-      setLocalPins(data.pins); // Update local state with fetched pins
+      
+      // Only update localPins if the data has changed
+      if (JSON.stringify(data.pins) !== JSON.stringify(localPins)) {
+        setLocalPins(data.pins); // Update local state with fetched pins
+      }
     } catch (error) {
       console.error('Error fetching pins:', error); // Log any errors
     }
@@ -162,10 +166,9 @@ const MapScreen = ({navigation}: Props) => {
     }));
   };
 
-  // Haversine formula to calculate distance
+  // Function to calculate distance using Haversine formula
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const toRad = value => value * (Math.PI / 180);
-
     const R = 6371; // Radius of the Earth in km
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
@@ -176,11 +179,9 @@ const MapScreen = ({navigation}: Props) => {
         Math.cos(toRad(lat2)) *
         Math.sin(dLon / 2) *
         Math.sin(dLon / 2);
-
+    
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance in km
-
-    return distance;
+    return R * c; // Distance in km
   };
 
   const [distance, setDistance] = useState(null);
@@ -948,6 +949,14 @@ const decodePolyline = encoded => {
     </TouchableOpacity>
   );
 
+  const userLat = user.latitude;
+  const userLon = user.longitude;
+
+  const nearbyPins = localPins.filter(pin => {
+
+    const distance = calculateDistance(userLat, userLon, pin.latitude, pin.longitude);
+    return distance <= newProximityThreshold; // Only include pins within the threshold
+  });
   return (
     <View style={styles.container}>
       <MapView
@@ -995,8 +1004,7 @@ const decodePolyline = encoded => {
         )}
 
         {/* Nearby Pins */}
-        {localPins
-          .filter(pin => selectedCategories.includes(pin.category)) // Filter pins based on selected categories
+        {nearbyPins
           .map((pin: any) => {
             // Initialize the default marker path based on the pin's category
             let pinMarker = require('../assets/maps/location.png'); // Default marker for regular businesses
@@ -1367,7 +1375,7 @@ const decodePolyline = encoded => {
         }}>
         <FlatList
           horizontal
-          data={filteredPins}
+          data={nearbyPins}
           showsHorizontalScrollIndicator={false}
           renderItem={({item}) => (
             <TouchableOpacity onPress={() => handleVisitPress(item)}>

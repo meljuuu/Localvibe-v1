@@ -98,16 +98,22 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
       dispatch(addShare({postId: postId ? postId : item._id, posts, user})); // Add share
     }
   };
-  const deletePostHandler = async (e: any) => {
-    await axios
-      .delete(`${URI}/delete-post/${e}`, {
+  const deletePostHandler = async (postId: string) => {
+    if (!postId) {
+      console.error("Post ID is required for deletion");
+      return;
+    }
+
+    try {
+      await axios.delete(`${URI}/delete-post/${postId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      .then(res => {
-        getAllPosts()(dispatch);
       });
+      getAllPosts()(dispatch); // Refresh the posts after deletion
+    } catch (error) {
+      console.error("Error deleting post:", error.response?.data || error.message);
+    }
   };
 
   useEffect(() => {
@@ -201,27 +207,38 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
               <Text style={styles.timeText}>{formattedDuration}</Text>
             </View>
 
-            {(item?.user.accountType === 'prembusiness' ||
-              item?.user.accountType === 'business') && (
-              <TouchableOpacity
-                style={styles.openMap}
-                onPress={() =>
-                  navigation.navigate('Map', {
-                    latitude: latitude,
-                    longitude: longitude,
-                  })
-                }>
-                <Text style={styles.userNameText}>Open Map</Text>
-              </TouchableOpacity>
-            )}
-
             <View style={styles.postActions}>
-              <TouchableOpacity onPress={() => setOpenModal(true)}>
-                <Image
-                  source={require('../assets/report.png')}
-                  style={styles.report}
-                />
-              </TouchableOpacity>
+              {user && user._id === item.user._id ? ( // Check if the user owns the post
+                <TouchableOpacity onPress={() => deletePostHandler(postId ? postId : item._id)} style={styles.deleteButton}>
+                  <Image
+                    source={require('../assets/delete.png')}
+                    style={styles.report}
+                  />
+                </TouchableOpacity>
+              ) : (
+                <>
+                    {(item?.user.accountType === 'prembusiness' ||
+                      item?.user.accountType === 'business') ? (
+                      <TouchableOpacity
+                        style={styles.openMap}
+                        onPress={() =>
+                          navigation.navigate('Map', {
+                            latitude: item.latitude, // Assuming latitude is part of item
+                            longitude: item.longitude, // Assuming longitude is part of item
+                          })
+                        }>
+                        <Text style={styles.userNameText}>Open Map</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity onPress={() => setOpenModal(true)}>
+                        <Image
+                          source={require('../assets/report.png')}
+                          style={styles.report}
+                        />
+                      </TouchableOpacity>
+                    )}
+                </>
+              )}
             </View>
           </View>
         </View>

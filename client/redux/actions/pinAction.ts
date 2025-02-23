@@ -165,29 +165,41 @@ export const getAllPins = () => async (dispatch: Dispatch<any>) => {
 
 export const deletePinAction =
   (pinId: string) => async (dispatch: Dispatch<any>) => {
-    console.log('trying to delete pin');
+    console.log('Trying to delete pin with ID:', pinId);
 
     try {
       dispatch({
         type: 'pinDeleteRequest',
-      });
+      }); 
 
+      // Retrieve the token
       const token = await AsyncStorage.getItem('token');
+      console.log('Retrieved token:', token); // Log the retrieved token
 
-      await axios.delete(`${URI}/delete-pin/${pinId}`, {
+      // Log the request details
+      const deleteUrl = `${URI}/delete-pin/${pinId}`;
+      console.log('Sending DELETE request to:', deleteUrl); // Log the URL being called
+
+      const response = await axios.delete(deleteUrl, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
+      console.log('Delete response:', response.data); // Log the response
       dispatch({
         type: 'pinDeleteSuccess',
         payload: pinId,
       });
     } catch (error: any) {
+      console.error('Error deleting pin:', error); // Log the error
+      if (error.response) {
+        console.error('Error response data:', error.response.data); // Log the error response data
+        console.error('Error response status:', error.response.status); // Log the error response status
+      }
       dispatch({
         type: 'pinDeleteFailed',
-        payload: error.response.data.message,
+        payload: error.response ? error.response.data.message : 'Unknown error',
       });
     }
   };
