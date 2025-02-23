@@ -958,6 +958,13 @@ const decodePolyline = encoded => {
     const distance = calculateDistance(userLat, userLon, pin.latitude, pin.longitude);
     return distance <= newProximityThreshold; // Only include pins within the threshold
   });
+
+  // Set default values for center coordinates
+  const defaultCenter = {
+    latitude: user?.latitude || 0, // Default to 0 if user latitude is not available
+    longitude: user?.longitude || 0, // Default to 0 if user longitude is not available
+  };
+
   return (
     <View style={styles.container}>
       <MapView
@@ -1120,7 +1127,10 @@ const decodePolyline = encoded => {
         {/* Radius */}
         {showThreshold && (
           <Circle
-            center={center}
+            center={{
+              latitude: center.latitude || defaultCenter.latitude,
+              longitude: center.longitude || defaultCenter.longitude,
+            }}
             radius={radius}
             fillColor="rgba(0, 255, 0, 0.2)"
             strokeColor="rgba(0, 255, 0, 0.5)"
