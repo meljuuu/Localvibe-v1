@@ -954,6 +954,7 @@ const decodePolyline = encoded => {
 
   const nearbyPins = localPins.filter(pin => {
 
+
     const distance = calculateDistance(userLat, userLon, pin.latitude, pin.longitude);
     return distance <= newProximityThreshold; // Only include pins within the threshold
   });
@@ -1006,101 +1007,105 @@ const decodePolyline = encoded => {
         {/* Nearby Pins */}
         {nearbyPins
           .map((pin: any) => {
-            // Initialize the default marker path based on the pin's category
-            let pinMarker = require('../assets/maps/location.png'); // Default marker for regular businesses
+            // Ensure pin.latitude and pin.longitude are valid
+            if (pin.latitude && pin.longitude) {
+              // Initialize the default marker path based on the pin's category
+              let pinMarker = require('../assets/maps/location.png'); // Default marker for regular businesses
 
-            // Set the marker based on pin category
-            switch (pin.category) {
-              case 'healthcare':
-                pinMarker = require('../assets/maps/free/healthcare.png');
-                break;
-              case 'transportation':
-                pinMarker = require('../assets/maps/free/transportation.png');
-                break;
-              case 'food':
-                pinMarker = require('../assets/maps/free/food.png');
-                break;
-              case 'merchant':
-                pinMarker = require('../assets/maps/free/merchant.png');
-                break;
-              case 'service':
-                pinMarker = require('../assets/maps/free/service.png');
-                break;
-              default:
-                pinMarker = require('../assets/maps/location.png');
-            }
+              // Set the marker based on pin category
+              switch (pin.category) {
+                case 'healthcare':
+                  pinMarker = require('../assets/maps/free/healthcare.png');
+                  break;
+                case 'transportation':
+                  pinMarker = require('../assets/maps/free/transportation.png');
+                  break;
+                case 'food':
+                  pinMarker = require('../assets/maps/free/food.png');
+                  break;
+                case 'merchant':
+                  pinMarker = require('../assets/maps/free/merchant.png');
+                  break;
+                case 'service':
+                  pinMarker = require('../assets/maps/free/service.png');
+                  break;
+                default:
+                  pinMarker = require('../assets/maps/location.png');
+              }
 
-            // Check the current user's ID
-            const currentUserId = user?._id;
+              // Check the current user's ID
+              const currentUserId = user?._id;
 
-            // If the current user created this pin
-            if (pin.createdBy === currentUserId) {
-              if (user?.accountType === 'prembusiness') {
-                switch (pin.category) {
-                  case 'healthcare':
-                    pinMarker = require('../assets/maps/premium/premHealthcare.png');
-                    break;
-                  case 'transportation':
-                    pinMarker = require('../assets/maps/premium/premTransportation.png');
-                    break;
-                  case 'food':
-                    pinMarker = require('../assets/maps/premium/premFood.png');
-                    break;
-                  case 'merchant':
-                    pinMarker = require('../assets/maps/premium/premMerchant.png');
-                    break;
-                  case 'service':
-                    pinMarker = require('../assets/maps/premium/premService.png');
-                    break;
-                  default:
-                    pinMarker = require('../assets/maps/premLocation.png');
+              // If the current user created this pin
+              if (pin.createdBy === currentUserId) {
+                if (user?.accountType === 'prembusiness') {
+                  switch (pin.category) {
+                    case 'healthcare':
+                      pinMarker = require('../assets/maps/premium/premHealthcare.png');
+                      break;
+                    case 'transportation':
+                      pinMarker = require('../assets/maps/premium/premTransportation.png');
+                      break;
+                    case 'food':
+                      pinMarker = require('../assets/maps/premium/premFood.png');
+                      break;
+                    case 'merchant':
+                      pinMarker = require('../assets/maps/premium/premMerchant.png');
+                      break;
+                    case 'service':
+                      pinMarker = require('../assets/maps/premium/premService.png');
+                      break;
+                    default:
+                      pinMarker = require('../assets/maps/premLocation.png');
+                  }
+                }
+              } else {
+                // Check if any user created the pin and is 'prembusiness'
+                const matchingUser = users.find(
+                  user => pin.createdBy === user._id,
+                );
+                if (matchingUser && matchingUser.accountType === 'prembusiness') {
+                  switch (pin.category) {
+                    case 'healthcare':
+                      pinMarker = require('../assets/maps/premium/premHealthcare.png');
+                      break;
+                    case 'transportation':
+                      pinMarker = require('../assets/maps/premium/premTransportation.png');
+                      break;
+                    case 'food':
+                      pinMarker = require('../assets/maps/premium/premFood.png');
+                      break;
+                    case 'merchant':
+                      pinMarker = require('../assets/maps/premium/premMerchant.png');
+                      break;
+                    case 'service':
+                      pinMarker = require('../assets/maps/premium/premService.png');
+                      break;
+                    default:
+                      pinMarker = require('../assets/maps/premLocation.png');
+                  }
                 }
               }
-            } else {
-              // Check if any user created the pin and is 'prembusiness'
-              const matchingUser = users.find(
-                user => pin.createdBy === user._id,
+
+              // Render the pin with the determined marker
+              return (
+                <Marker
+                  key={pin._id}
+                  coordinate={{
+                    latitude: pin.latitude,
+                    longitude: pin.longitude,
+                  }}
+                  title={pin.businessName}
+                  description={pin.description}
+                  image={pinMarker}
+                  onPress={() => {
+                    handlePinMarkerPress(pin);
+                    handleVisitButtonPress(pin);
+                  }}
+                />
               );
-              if (matchingUser && matchingUser.accountType === 'prembusiness') {
-                switch (pin.category) {
-                  case 'healthcare':
-                    pinMarker = require('../assets/maps/premium/premHealthcare.png');
-                    break;
-                  case 'transportation':
-                    pinMarker = require('../assets/maps/premium/premTransportation.png');
-                    break;
-                  case 'food':
-                    pinMarker = require('../assets/maps/premium/premFood.png');
-                    break;
-                  case 'merchant':
-                    pinMarker = require('../assets/maps/premium/premMerchant.png');
-                    break;
-                  case 'service':
-                    pinMarker = require('../assets/maps/premium/premService.png');
-                    break;
-                  default:
-                    pinMarker = require('../assets/maps/premLocation.png');
-                }
-              }
             }
-
-            // Render the pin with the determined marker
-            return (
-              <Marker
-                key={pin._id} // Ensure this uses pin._id correctly
-                coordinate={{
-                  latitude: pin.latitude,
-                  longitude: pin.longitude,
-                }}
-                title={pin.businessName}
-                description={pin.description}
-                image={pinMarker} // The resized 100x100 image
-                onPress={() => {
-                  handlePinMarkerPress(pin); // Handle pin marker press
-                  handleVisitButtonPress(pin); // Handle visit button press
-                }}
-              />
-            );
+            return null; // Return null if coordinates are invalid
           })}
 
         {/* New Pin */}
