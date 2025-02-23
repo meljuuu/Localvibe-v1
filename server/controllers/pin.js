@@ -127,7 +127,7 @@ exports.updatePinById = catchAsyncErrors(async (req, res, next) => {
 
 // Delete pin by ID
 exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
-  console.log("trying to delete pin");
+  console.log("Trying to delete pin with ID:", req.params.id);
   try {
     const pin = await Pin.findById(req.params.id);
     if (!pin) {
@@ -145,6 +145,7 @@ exports.deletePinById = catchAsyncErrors(async (req, res, next) => {
       message: "Pin deleted successfully",
     });
   } catch (error) {
+    console.error("Error deleting pin:", error.message);
     return next(new ErrorHandler(error.message, 400));
   }
 });
