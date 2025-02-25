@@ -1,27 +1,31 @@
 import nodemailer from "nodemailer";
+require("dotenv").config();
 import {
   verificationTokenEmailTemplate,
   WELCOME_EMAIL_TEMPLATE,
 } from "./email-templates.js";
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.ethereal.email", // SMTP host
+  service: 'gmail',
+  host: "smtp.gmail.email", // SMTP host
   port: 587, // 465 secure connection, 587 TLS
   secure: false, // true if 465
   auth: {
-    user: "solomonjoshua14040@gmail.com", // SMTP user
-    pass: "-", // SMTP password
+    user: process.env.SENDER_EMAIL, // SMTP user
+    pass: process.env.SENDER_PASSWORD, // SMTP password
   },
 });
 
 export const sendVerificationEmail = async (email, verificationToken) => {
-  console.log("Preparing to send verification email...");
   console.log("Email:", email);
   console.log("Verification Token:", verificationToken);
 
   try {
     const info = await transporter.sendMail({
-      from: 'LocalVibe <solomonjoshua14040@gmail.com>', // sender email
+      from: {
+        name: 'LocalVibe', // sender name
+        address: process.env.SENDER_EMAIL, // sender email
+      }, 
       to: email,
       subject: "Verify Your Email Address Now",
       html: verificationTokenEmailTemplate.replace("{verificationToken}", verificationToken),
