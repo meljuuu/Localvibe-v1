@@ -279,9 +279,7 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    user.password = hashedPassword;
+    user.password = password;
 
     // Clear OTP fields
     user.resetPasswordToken = undefined;
