@@ -203,6 +203,51 @@ exports.logoutUser = catchAsyncErrors(async (req, res, next) => {
 });
 
 
+exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
+  const { email } = req.body;
+
+  try {
+    // Retrieve all users
+    const allUsers = await User.find();
+
+    // Find the user by decrypting stored emails
+    const user = allUsers.find(user => {
+      try {
+        return user.getDecryptedEmail() === email;
+      } catch (err) {
+        console.log(`Error decrypting email for user ${user._id}:`, err.message);
+        return false;
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
+
+    // Generate OTP
+    const resetPasswordToken = generateVerificationToken();
+    const otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes validity
+
+    // Store OTP in the database
+    user.resetPasswordToken = resetPasswordToken;
+    user.resetPasswordExpiresAt = otpExpiresAt;
+
+    await user.save();
+
+    // Send OTP email
+    await sendPasswordResetEmail(user.getDecryptedEmail(), resetPasswordToken);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent successfully to your email!",
+    });
+  } catch (error) {
+    console.log("Error sending OTP:", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+// Verify OTP and reset password
 exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   try {
     const { email, resetPasswordToken, password } = req.body;
@@ -240,57 +285,6 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
 
     // Clear OTP fields
     user.resetPasswordToken = undefined;
-    user.resetPasswordExpiresAt = undefined;
-    await user.save();
-
-    // Send confirmation email
-    await sendResetSuccessEmail(user.getDecryptedEmail());
-
-    res.status(200).json({ success: true, message: "Password reset successfully" });
-  } catch (error) {
-    console.log("Error resetting password:", error);
-    res.status(400).json({ success: false, message: error.message });
-  }
-});
-
-// Verify OTP and reset password
-exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
-  try {
-    const { email, otp, password } = req.body;
-
-    // Retrieve all users
-    const allUsers = await User.find();
-
-    // Find the user by decrypting stored emails
-    const user = allUsers.find(user => {
-      try {
-        return user.getDecryptedEmail() === email;
-      } catch (err) {
-        console.log(`Error decrypting email for user ${user._id}:`, err.message);
-        return false;
-      }
-    });
-
-    if (!user) {
-      return res.status(400).json({ success: false, message: "User not found" });
-    }
-
-    // Validate OTP
-    if (!user.resetPasswordOTP || user.resetPasswordOTP !== otp) {
-      return res.status(400).json({ success: false, message: "Invalid OTP" });
-    }
-
-    // Check if OTP is expired
-    if (user.resetPasswordExpiresAt < Date.now()) {
-      return res.status(400).json({ success: false, message: "OTP has expired" });
-    }
-
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    user.password = hashedPassword;
-
-    // Clear OTP fields
-    user.resetPasswordOTP = undefined;
     user.resetPasswordExpiresAt = undefined;
     await user.save();
 
