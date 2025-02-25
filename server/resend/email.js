@@ -3,6 +3,8 @@ require("dotenv").config();
 import {
   verificationTokenEmailTemplate,
   WELCOME_EMAIL_TEMPLATE,
+  FORGOT_PASSWORD_EMAIL_TEMPLATE,
+  RESET_PASSWORD_EMAIL_TEMPLATE,
 } from "./email-templates.js";
 
 const transporter = nodemailer.createTransport({
@@ -73,7 +75,7 @@ export const sendPasswordResetEmail = async (email, otp) => {
       },
       to: email,
       subject: "Your Password Reset OTP",
-      html: `<p>Your OTP for password reset is: <b>${otp}</b></p><p>This OTP will expire in 10 minutes.</p>`,
+      html: FORGOT_PASSWORD_EMAIL_TEMPLATE.replace("{verificationToken}", otp),
     });
 
     console.log("Password reset OTP sent successfully:", info.messageId);
@@ -94,7 +96,7 @@ export const sendResetSuccessEmail = async (email) => {
       },
       to: email,
       subject: "Password Reset Successful",
-      html: `<p>Your password was successfully reset.</p>`,
+      html: RESET_PASSWORD_EMAIL_TEMPLATE,
     });
 
     console.log("Password reset success email sent:", info.messageId);
