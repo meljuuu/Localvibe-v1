@@ -313,7 +313,7 @@ text-decoration: none
 <!--[if !mso]>-->
 <td class="t3" style="width:85px;">
 <!--<![endif]-->
-<table class="t2" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t1"><div style="font-size:0px;"><img class="t0" style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width="85" height="85" alt="" src="./images/1.png"/></div></td></tr></table>
+<table class="t2" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t1"><div style="font-size:0px;"><img class="t0" style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width="85" height="85" alt="" src="https://i.ibb.co/WvKKmkG5/377284739-1742421982862767-3947049367661284607-n.png"/></div></td></tr></table>
 </td></tr></table>
 </td></tr></table></td></tr></table>
 </td>
@@ -546,7 +546,7 @@ text-decoration: none
 <!--[if !mso]>-->
 <td class="t3" style="width:85px;">
 <!--<![endif]-->
-<table class="t2" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t1"><div style="font-size:0px;"><img class="t0" style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width="85" height="85" alt="" src="./images/1.png"/></div></td></tr></table>
+<table class="t2" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t1"><div style="font-size:0px;"><img class="t0" style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width="85" height="85" alt="" src="https://i.ibb.co/WvKKmkG5/377284739-1742421982862767-3947049367661284607-n.png"/></div></td></tr></table>
 </td></tr></table>
 </td></tr></table></td></tr></table>
 </td>
@@ -800,7 +800,7 @@ text-decoration: none
 <!--[if !mso]>-->
 <td class="t3" style="width:85px;">
 <!--<![endif]-->
-<table class="t2" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t1"><div style="font-size:0px;"><img class="t0" style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width="85" height="85" alt="" src="./images/1.png"/></div></td></tr></table>
+<table class="t2" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t1"><div style="font-size:0px;"><img class="t0" style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width="85" height="85" alt="" src="https://i.ibb.co/WvKKmkG5/377284739-1742421982862767-3947049367661284607-n.png"/></div></td></tr></table>
 </td></tr></table>
 </td></tr></table></td></tr></table>
 </td>
