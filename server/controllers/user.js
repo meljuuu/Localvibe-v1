@@ -216,12 +216,25 @@ exports.logoutUser = catchAsyncErrors(async (req, res, next) => {
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   const { email } = req.body;
   try {
-    const user = await User.findOne({ email });
+    // Retrieve all users
+    const allUsers = await User.find();
+
+    // Find the user by decrypting stored emails
+    const user = allUsers.find(user => {
+      try {
+        return user.getDecryptedEmail() === email;
+      } catch (err) {
+        console.log(`Error decrypting email for user ${user._id}:`, err.message);
+        return false; // Skip user if decryption fails
+      }
+    });
+
     if (!user) {
       return res
         .status(400)
         .json({ success: false, message: "User not found" });
     }
+
     const resetPasswordToken = crypto.randomBytes(32).toString("hex");
     const resetPasswordExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
 
@@ -230,7 +243,7 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
     await user.save();
     await sendPasswordResetEmail(
-      user.email,
+      user.getDecryptedEmail(), // Use decrypted email for sending the email
       `${process.env.CLIENT_URL}/reset-password/${resetPasswordToken}`
     );
 
@@ -243,6 +256,7 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
     res.status(400).json({ success: false, message: error.message });
   }
 });
+
 
 exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   try {

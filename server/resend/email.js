@@ -23,7 +23,7 @@ export const sendVerificationEmail = async (email, verificationToken) => {
   try {
     const info = await transporter.sendMail({
       from: {
-        name: 'LocalVibe', // sender name
+        name: 'LocalVibe Team', // sender name
         address: process.env.SENDER_EMAIL, // sender email
       }, 
       to: email,
@@ -38,41 +38,69 @@ export const sendVerificationEmail = async (email, verificationToken) => {
   }
 };
 
-// export const sendWelcomeEmail = async (email, name) => {
-//   try {
-//     const { data, error } = await resend.emails.send({
-//       from: "Acme <onboarding@resend.dev>",
-//       to: [email],
-//       subject: "Welcome to our company",
-//       html: WELCOME_EMAIL_TEMPLATE.replace("{name}", name),
-//     });
-//   } catch (error) {
-//     console.log("error sending welcome email", error);
-//   }
-// };
+export const sendWelcomeEmail = async (email, name) => {
+  console.log("Email:", email);
+  console.log("Recipient Name:", name);
 
-// export const sendPasswordResetEmail = async (email, resetURL) => {
-//   try {
-//     const { data, error } = await resend.emails.send({
-//       from: "Acme <onboarding@resend.dev>",
-//       to: [email],
-//       subject: "Reset Your Password",
-//       html: `Click <a href="${resetURL}">here</a> to reset your password`,
-//     });
-//   } catch (error) {
-//     console.log("error sending password reset email", error);
-//   }
-// };
+  try {
 
-// export const sendResetSuccessEmail = async (email) => {
-//   try {
-//     const { data, error } = await resend.emails.send({
-//       from: "Acme <onboarding@resend.dev>",
-//       to: [email],
-//       subject: "Password Reset Was Successful",
-//       html: `Your password was reset successfully`,
-//     });
-//   } catch (error) {
-//     console.log("error sending password reset successful email", error);
-//   }
-// }
+    const info = await transporter.sendMail({
+      from: {
+        name: 'LocalVibe Team',
+        address: process.env.SENDER_EMAIL,
+      },
+      to: email,
+      subject: "Welcome to Our Company",
+      html: WELCOME_EMAIL_TEMPLATE.replace("{name}", name),
+    });
+
+    console.log("Welcome email sent successfully:", info.messageId);
+  } catch (error) {
+    console.error("Error sending welcome email:", error);
+    throw new Error("Error sending welcome email: " + error.message);
+  }
+};
+
+
+export const sendPasswordResetEmail = async (email, resetURL) => {
+  console.log("Email:", email);
+  console.log("Reset URL:", resetURL);
+
+  try {
+    const info = await transporter.sendMail({
+      from: {
+        name: "LocalVibe Team", // sender name
+        address: process.env.SENDER_EMAIL, // sender email
+      },
+      to: email,
+      subject: "Reset Your Password",
+      html: `Click <a href="${resetURL}">here</a> to reset your password`,
+    });
+
+    console.log("Password reset email sent successfully:", info.messageId);
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    throw new Error("Error sending password reset email: " + error.message);
+  }
+};
+
+export const sendResetSuccessEmail = async (email) => {
+  console.log("Email:", email);
+
+  try {
+    const info = await transporter.sendMail({
+      from: {
+        name: "LocalVibe Team", // sender name
+        address: process.env.SENDER_EMAIL, // sender email
+      },
+      to: email,
+      subject: "Password Reset Was Successful",
+      html: `Your password was reset successfully`,
+    });
+
+    console.log("Password reset success email sent:", info.messageId);
+  } catch (error) {
+    console.error("Error sending password reset success email:", error);
+    throw new Error("Error sending password reset success email: " + error.message);
+  }
+};
