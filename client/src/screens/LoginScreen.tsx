@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {loadUser, loginUser} from '../../redux/actions/userAction';
+import { URI } from '../../redux/URI';
+
 
 type Props = {
   navigation: any;
@@ -31,6 +33,28 @@ const LoginScreen = ({navigation}: Props) => {
     console.log('Login submitted');
     loginUser(email, password)(dispatch);
   };
+
+  const handleForgotPassword = async () => {
+    try {
+      const response = await fetch(`${URI}/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        navigation.navigate('ForgotPassword');
+      } else {
+        Alert.alert('Error', data.message || 'Something went wrong');
+      }
+    } catch (error) {
+      console.error('Forgot Password Error:', error);
+      Alert.alert('Error', 'Failed to request password reset');
+    }
+  };
+  
 
   useEffect(() => {
     if (error) {
@@ -86,7 +110,13 @@ const LoginScreen = ({navigation}: Props) => {
                 style={styles.input}
               />
             </View>
-            <Text style={styles.forgotPass}>Forgot Password?</Text>
+            <Text 
+              onPress={() => handleForgotPassword()}
+              style={styles.forgotPass}
+            >
+              Forgot Password?
+            </Text>
+
           </View>
 
           <View style={styles.buttonContainer}>

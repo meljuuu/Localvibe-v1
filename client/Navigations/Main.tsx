@@ -15,6 +15,7 @@ import EditProfile from '../src/components/EditProfile';
 import BusinessPinScreen from '../src/screens/BusinessPinScreen';
 import PremiumScreen from '../src/screens/PremiumScreen';
 import VerifyEmail from '../src/screens/EmailVerificationScreen';
+import ForgotPassword from '../src/screens/ForgotPasswordScreen';
 
 type Props = {};
 
@@ -47,6 +48,7 @@ const Main = (props: Props) => {
         screenOptions={{
           headerShown: false,
         }}>
+        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
         <Stack.Screen name="OnBoarding" component={OnBoarding} />
         <Stack.Screen name="Home" component={Tabs} />
         <Stack.Screen name="Post" component={PostScreen} />
@@ -60,7 +62,7 @@ const Main = (props: Props) => {
         <Stack.Screen name="FollowerCard" component={FollowerCard} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="PremiumScreen" component={PremiumScreen} />
-        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
       </Stack.Navigator>
     );
   } else {
@@ -70,6 +72,7 @@ const Main = (props: Props) => {
         screenOptions={{
           headerShown: false,
         }}>
+        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
         <Stack.Screen name="Home" component={Tabs} />
         <Stack.Screen name="Post" component={PostScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
@@ -82,7 +85,7 @@ const Main = (props: Props) => {
         <Stack.Screen name="FollowerCard" component={FollowerCard} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="PremiumScreen" component={PremiumScreen} />
-        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
       </Stack.Navigator>
     );
   }
