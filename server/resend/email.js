@@ -61,41 +61,40 @@ export const sendWelcomeEmail = async (email, name) => {
   }
 };
 
-
-export const sendPasswordResetEmail = async (email, resetURL) => {
-  console.log("Email:", email);
-  console.log("Reset URL:", resetURL);
+export const sendPasswordResetEmail = async (email, otp) => {
+  console.log("Sending OTP to:", email);
+  console.log("Generated OTP:", otp);
 
   try {
     const info = await transporter.sendMail({
       from: {
-        name: "LocalVibe Team", // sender name
-        address: process.env.SENDER_EMAIL, // sender email
+        name: "LocalVibe Team",
+        address: process.env.SENDER_EMAIL,
       },
       to: email,
-      subject: "Reset Your Password",
-      html: `Click <a href="${resetURL}">here</a> to reset your password`,
+      subject: "Your Password Reset OTP",
+      html: `<p>Your OTP for password reset is: <b>${otp}</b></p><p>This OTP will expire in 10 minutes.</p>`,
     });
 
-    console.log("Password reset email sent successfully:", info.messageId);
+    console.log("Password reset OTP sent successfully:", info.messageId);
   } catch (error) {
-    console.error("Error sending password reset email:", error);
-    throw new Error("Error sending password reset email: " + error.message);
+    console.error("Error sending OTP:", error);
+    throw new Error("Error sending OTP: " + error.message);
   }
 };
 
 export const sendResetSuccessEmail = async (email) => {
-  console.log("Email:", email);
+  console.log("Sending password reset success email to:", email);
 
   try {
     const info = await transporter.sendMail({
       from: {
-        name: "LocalVibe Team", // sender name
-        address: process.env.SENDER_EMAIL, // sender email
+        name: "LocalVibe Team",
+        address: process.env.SENDER_EMAIL,
       },
       to: email,
-      subject: "Password Reset Was Successful",
-      html: `Your password was reset successfully`,
+      subject: "Password Reset Successful",
+      html: `<p>Your password was successfully reset.</p>`,
     });
 
     console.log("Password reset success email sent:", info.messageId);

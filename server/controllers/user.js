@@ -71,17 +71,6 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
     const uniqueNumber = Math.floor(Math.random() * 1000);
     const verificationToken = generateVerificationToken();
 
-    // user = await User.create({
-    //   name,
-    //   email,
-    //   password,
-    //   accountType,
-    //   userName: userNameWithoutSpace + " #" + uniqueNumber,
-    //   avatar: avatar
-    //     ? { public_id: myCloud.public_id, url: myCloud.secure_url }
-    //     : null,
-    // });
-
     let user = new User({
       name,
       email,
@@ -213,8 +202,10 @@ exports.logoutUser = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   const { email } = req.body;
+
   try {
     // Retrieve all users
     const allUsers = await User.find();
@@ -225,67 +216,84 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
         return user.getDecryptedEmail() === email;
       } catch (err) {
         console.log(`Error decrypting email for user ${user._id}:`, err.message);
-        return false; // Skip user if decryption fails
+        return false;
       }
     });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not found" });
+      return res.status(400).json({ success: false, message: "User not found" });
     }
 
-    const resetPasswordToken = crypto.randomBytes(32).toString("hex");
-    const resetPasswordExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
+    // Generate OTP
+    const resetPasswordToken = generateVerificationToken();
+    const otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes validity
 
+    // Store OTP in the database
     user.resetPasswordToken = resetPasswordToken;
-    user.resetPasswordExpiresAt = resetPasswordExpiresAt;
+    user.resetPasswordExpiresAt = otpExpiresAt;
 
     await user.save();
-    await sendPasswordResetEmail(
-      user.getDecryptedEmail(), // Use decrypted email for sending the email
-      `${process.env.CLIENT_URL}/reset-password/${resetPasswordToken}`
-    );
+
+    // Send OTP email
+    await sendPasswordResetEmail(user.getDecryptedEmail(), resetPasswordToken);
 
     res.status(200).json({
       success: true,
-      message: "Password reset email sent successfully!",
+      message: "OTP sent successfully to your email!",
     });
   } catch (error) {
-    console.log("error sending password reset email", error);
+    console.log("Error sending OTP:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
-
+// Verify OTP and reset password
 exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { token } = req.params;
-    const { password } = req.body;
-    // console.log(token)
-    // console.log(password)
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpiresAt: { $gt: Date.now() },
+    const { email, otp, password } = req.body;
+
+    // Retrieve all users
+    const allUsers = await User.find();
+
+    // Find the user by decrypting stored emails
+    const user = allUsers.find(user => {
+      try {
+        return user.getDecryptedEmail() === email;
+      } catch (err) {
+        console.log(`Error decrypting email for user ${user._id}:`, err.message);
+        return false;
+      }
     });
+
     if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid or expired reset token" });
+      return res.status(400).json({ success: false, message: "User not found" });
     }
+
+    // Validate OTP
+    if (!user.resetPasswordOTP || user.resetPasswordOTP !== otp) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+
+    // Check if OTP is expired
+    if (user.resetPasswordExpiresAt < Date.now()) {
+      return res.status(400).json({ success: false, message: "OTP has expired" });
+    }
+
+    // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
     user.password = hashedPassword;
-    user.resetPasswordToken = undefined;
+
+    // Clear OTP fields
+    user.resetPasswordOTP = undefined;
     user.resetPasswordExpiresAt = undefined;
     await user.save();
 
-    await sendResetSuccessEmail(user.email);
+    // Send confirmation email
+    await sendResetSuccessEmail(user.getDecryptedEmail());
 
-    res
-      .status(200)
-      .json({ success: true, message: "Password reset successfully" });
+    res.status(200).json({ success: true, message: "Password reset successfully" });
   } catch (error) {
-    console.log("error resetting password", error);
+    console.log("Error resetting password:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 });
