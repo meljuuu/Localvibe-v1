@@ -203,10 +203,10 @@ exports.logoutUser = catchAsyncErrors(async (req, res, next) => {
 });
 
 
-exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
-  const { email } = req.body;
-
+exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   try {
+    const { email, resetPasswordToken, password } = req.body;
+
     // Retrieve all users
     const allUsers = await User.find();
 
@@ -224,25 +224,31 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
       return res.status(400).json({ success: false, message: "User not found" });
     }
 
-    // Generate OTP
-    const resetPasswordToken = generateVerificationToken();
-    const otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes validity
+    // Validate OTP
+    if (!user.resetPasswordToken || user.resetPasswordToken !== resetPasswordToken) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
 
-    // Store OTP in the database
-    user.resetPasswordToken = resetPasswordToken;
-    user.resetPasswordExpiresAt = otpExpiresAt;
+    // Check if OTP is expired
+    if (user.resetPasswordExpiresAt < Date.now()) {
+      return res.status(400).json({ success: false, message: "OTP has expired" });
+    }
 
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+
+    // Clear OTP fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiresAt = undefined;
     await user.save();
 
-    // Send OTP email
-    await sendPasswordResetEmail(user.getDecryptedEmail(), resetPasswordToken);
+    // Send confirmation email
+    await sendResetSuccessEmail(user.getDecryptedEmail());
 
-    res.status(200).json({
-      success: true,
-      message: "OTP sent successfully to your email!",
-    });
+    res.status(200).json({ success: true, message: "Password reset successfully" });
   } catch (error) {
-    console.log("Error sending OTP:", error);
+    console.log("Error resetting password:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 });
