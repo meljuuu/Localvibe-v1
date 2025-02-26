@@ -25,7 +25,6 @@ const LoginScreen = ({navigation}: Props) => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isFocused, setIsFocused] = useState(false); // State to track focus
 
   const dispatch = useDispatch();
 
@@ -35,24 +34,7 @@ const LoginScreen = ({navigation}: Props) => {
   };
 
   const handleForgotPassword = async () => {
-    try {
-      const response = await fetch(`${URI}/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email }),
-      });
-  
-      const data = await response.json();
-  
-      if (data.success) {
-        navigation.navigate('ForgotPassword');
-      } else {
-        Alert.alert('Error', data.message || 'Something went wrong');
-      }
-    } catch (error) {
-      console.error('Forgot Password Error:', error);
-      Alert.alert('Error', 'Failed to request password reset');
-    }
+    navigation.navigate('ForgotPassword');
   };
   
 
@@ -68,7 +50,7 @@ const LoginScreen = ({navigation}: Props) => {
   }, [error, isAuthenticated, navigation, dispatch]);
 
   return (
-    <View style={[styles.container, isFocused && styles.containerFocused]}>
+    <View style={styles.container}>
       <StatusBar
         translucent
         backgroundColor="transparent"
@@ -92,8 +74,6 @@ const LoginScreen = ({navigation}: Props) => {
                 placeholder="Email or Phone Number"
                 value={email}
                 onChangeText={setEmail}
-                onFocus={() => setIsFocused(true)} // Handle focus
-                onBlur={() => setIsFocused(false)} // Handle blur
                 style={styles.input}
               />
             </View>
@@ -105,8 +85,6 @@ const LoginScreen = ({navigation}: Props) => {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
-                onFocus={() => setIsFocused(true)} // Handle focus
-                onBlur={() => setIsFocused(false)} // Handle blur
                 style={styles.input}
               />
             </View>
@@ -200,6 +178,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     marginBottom: 22,
+    width: '100%',
   },
   inputContainerPass: {
     height: 60,
@@ -207,6 +186,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     marginBottom: 12,
+    width: '100%',
   },
   inputLabel: {
     width: '100%',
@@ -217,8 +197,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   input: {
-    width: 341,
     height: 39,
+    width: '100%',
     backgroundColor: 'white',
     borderRadius: 10,
     borderColor: '#9e9e9e',

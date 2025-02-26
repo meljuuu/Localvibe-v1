@@ -1520,12 +1520,7 @@ const decodePolyline = encoded => {
                             source={require('../assets/email.png')}
                           />
                           <Text style={styles.emailText}>
-                            {
-                              // Find the user from the list whose ID matches selectedPin.createdBy
-                              users?.find(
-                                user => user._id === selectedPin.createdBy,
-                              )?.email || 'Email not available'
-                            }
+                            {selectedPin.contactInfo?.email || 'Email not available'}
                           </Text>
                         </View>
 
@@ -1831,7 +1826,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    width: '70%',
+    width: '100%',
   },
   dashLine: {
     fontSize: 25,
@@ -1846,11 +1841,12 @@ const styles = StyleSheet.create({
   daySelectionContainer: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     marginTop: 10,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#000',
+    flexWrap: 'wrap',
   },
   dayText: {
     fontSize: 14,

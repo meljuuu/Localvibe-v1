@@ -1966,6 +1966,7 @@ const styles = StyleSheet.create({
   contactImage: {
     width: 40,
     height: 40,
+    marginBottom: 10,
   },
   contact: {
     marginTop: 10,
@@ -1988,6 +1989,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    backgroundColor: '#ffff',
   },
   scrollContainer: {
     paddingTop: 0,
@@ -2095,11 +2097,11 @@ const styles = StyleSheet.create({
   infoContainer: {
     display: 'flex',
     flexDirection: 'row',
-    width: 190,
+    width: 200,
     justifyContent: 'space-between',
     position: 'absolute',
     top: -50,
-    left: '50%',
+    left: '45%',
   },
   information: {
     display: 'flex',
@@ -2163,7 +2165,7 @@ const styles = StyleSheet.create({
   businessInfo: {
     display: 'flex',
     flexDirection: 'row',
-    width: '53%',
+    width: '45%',
   },
   businessName: {
     fontSize: 20,

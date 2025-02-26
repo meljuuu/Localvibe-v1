@@ -275,6 +275,9 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
 
     // Validate OTP
     const decryptedToken = user.getDecryptedResetPasswordToken();
+    console.log("Decrypted Token:", decryptedToken);
+    console.log("Received Token:", resetPasswordToken);
+
     if (decryptedToken !== resetPasswordToken) {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   View,
   Text,
@@ -409,7 +410,7 @@ export default PostCard;
 
 const styles = StyleSheet.create({
   openMap: {
-    marginLeft: 40,
+    marginLeft: '23%',
   },
   container: {
     paddingHorizontal: 5,
@@ -465,7 +466,7 @@ const styles = StyleSheet.create({
     height: 25,
     width: 25,
     resizeMode: 'contain',
-    marginLeft: 80,
+    marginLeft: '46%',
   },
   postImageContainer: {
     paddingVertical: 10,

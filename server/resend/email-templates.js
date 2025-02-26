@@ -1,157 +1,55 @@
 export const verificationTokenEmailTemplate = `
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html dir="ltr" lang="en">
-  <head>
-    <link
-      rel="preload"
-      as="image"
-      href="https://i.ibb.co/d4Vc0kty/856b0de5-717a-4684-9e7a-8c67e4033627.png" />
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <meta name="x-apple-disable-message-reformatting" />
-    <!--$-->
-  </head>
-  <body style="background-color:#fff;color:#35B896">
-    <div
-      style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0">
-      LocalVibe Email Verification
-      <div>
-         ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿
-      </div>
-    </div>
-    <table
-      align="center"
-      width="100%"
-      border="0"
-      cellpadding="0"
-      cellspacing="0"
-      role="presentation"
-      style="max-width:37.5em;padding:20px;margin:0 auto;background-color:#eee">
-      <tbody>
-        <tr style="width:100%">
-          <td>
-            <table
-              align="center"
-              width="100%"
-              border="0"
-              cellpadding="0"
-              cellspacing="0"
-              role="presentation"
-              style="background-color:#fff">
-              <tbody>
-                <tr>
-                  <td>
-                    <table
-                      align="center"
-                      width="100%"
-                      border="0"
-                      cellpadding="0"
-                      cellspacing="0"
-                      role="presentation"
-                      style="background-color:#252f3d;display:flex;padding:20px 0;align-items:center;justify-content:center">
-                      <tbody>
-                        <tr>
-                          <td>
-                            <img
-                              alt="localvibe&#x27;s Logo"
-                              height="45"
-                              src="https://i.ibb.co/d4Vc0kty/856b0de5-717a-4684-9e7a-8c67e4033627.png"
-                              style="display:block;outline:none;border:none;text-decoration:none"
-                              width="75" />
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <table
-                      align="center"
-                      width="100%"
-                      border="0"
-                      cellpadding="0"
-                      cellspacing="0"
-                      role="presentation"
-                      style="padding:25px 35px">
-                      <tbody>
-                        <tr>
-                          <td>
-                            <h1
-                              style="color:#333;font-family:-apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, &#x27;Roboto&#x27;, &#x27;Oxygen&#x27;, &#x27;Ubuntu&#x27;, &#x27;Cantarell&#x27;, &#x27;Fira Sans&#x27;, &#x27;Droid Sans&#x27;, &#x27;Helvetica Neue&#x27;, sans-serif;font-size:20px;font-weight:bold;margin-bottom:15px">
-                              Verify your email address
-                            </h1>
-                            <p
-                            style="font-size:14px;line-height:24px;margin:24px 0;color:#333;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;margin-bottom:14px">
-                            Thanks for signing up for <strong>LocalVibe</strong>! We want to make sure it's really you.  
-                            Please enter the following verification code when prompted.  
-                            If you didn’t request this, you can safely ignore this message.
-                            </p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalVibe Verification Code</title>
+</head>
+<body style="font-family: 'Roboto', sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; color: #333;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="height: 100%;">
+        <tr>
+            <td align="center" valign="middle">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                    <tr>
+                        <td style="background-color: #ffffff; padding: 30px 20px; text-align: center;">
 
-                            <table
-                              align="center"
-                              width="100%"
-                              border="0"
-                              cellpadding="0"
-                              cellspacing="0"
-                              role="presentation"
-                              style="display:flex;align-items:center;justify-content:center">
-                              <tbody>
-                                <tr>
-                                  <td>
-                                    <p
-                                      style="font-size:14px;line-height:24px;margin:0;color:#333;font-family:-apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, &#x27;Roboto&#x27;, &#x27;Oxygen&#x27;, &#x27;Ubuntu&#x27;, &#x27;Cantarell&#x27;, &#x27;Fira Sans&#x27;, &#x27;Droid Sans&#x27;, &#x27;Helvetica Neue&#x27;, sans-serif;font-weight:bold;text-align:center">
-                                      Verification code
-                                    </p>
-                                    <p
-                                      style="font-size:36px;line-height:24px;margin:10px 0;color:#333;font-family:-apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, &#x27;Roboto&#x27;, &#x27;Oxygen&#x27;, &#x27;Ubuntu&#x27;, &#x27;Cantarell&#x27;, &#x27;Fira Sans&#x27;, &#x27;Droid Sans&#x27;, &#x27;Helvetica Neue&#x27;, sans-serif;font-weight:bold;text-align:center">
-                                      {verificationToken}
-                                    </p>
-                                    <p
-                                      style="font-size:14px;line-height:24px;margin:0px;color:#333;font-family:-apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, &#x27;Roboto&#x27;, &#x27;Oxygen&#x27;, &#x27;Ubuntu&#x27;, &#x27;Cantarell&#x27;, &#x27;Fira Sans&#x27;, &#x27;Droid Sans&#x27;, &#x27;Helvetica Neue&#x27;, sans-serif;text-align:center">
-                                      (This code is valid for 1 day)
-                                    </p>
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <hr
-                      style="width:100%;border:none;border-top:1px solid #eaeaea" />
-                    <table
-                      align="center"
-                      width="100%"
-                      border="0"
-                      cellpadding="0"
-                      cellspacing="0"
-                      role="presentation"
-                      style="padding:25px 35px">
-                      <tbody>
-                        <tr>
-                          <td>
-                            <p
-                              style="font-size:14px;line-height:24px;margin:0px;color:#333;font-family:-apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, &#x27;Roboto&#x27;, &#x27;Oxygen&#x27;, &#x27;Ubuntu&#x27;, &#x27;Cantarell&#x27;, &#x27;Fira Sans&#x27;, &#x27;Droid Sans&#x27;, &#x27;Helvetica Neue&#x27;, sans-serif">
-                              Localvibe Team will never email you and ask
-                              you to disclose or verify your password, credit
-                              card, or banking account number.
+                            <img src="https://i.ibb.co/Tx4wD6X6/ate.png" alt="LocalVibe Logo" style="max-width: 180px; height: auto; display: block; margin: 0 auto;">
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td style="padding: 40px 30px; text-align: center;">
+                            <h2 style="font-size: 24px; font-weight: 600; color: #017E5E; margin-bottom: 20px;">Verify Your Email</h2>
+                            <p style="font-size: 16px; color: #555; margin-bottom: 30px; line-height: 1.6;">
+                                Thank you for signing up with LocalVibe! To complete your registration, please use the following verification code:
                             </p>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p
-              style="font-size:12px;line-height:24px;margin:24px 0;color:#333;font-family:-apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, &#x27;Roboto&#x27;, &#x27;Oxygen&#x27;, &#x27;Ubuntu&#x27;, &#x27;Cantarell&#x27;, &#x27;Fira Sans&#x27;, &#x27;Droid Sans&#x27;, &#x27;Helvetica Neue&#x27;, sans-serif;padding:0 20px">
-              This message was produced and distributed by LocalVibe, Inc.
-                © 2025, LocalVibe, Inc. All rights reserved.
-            </p>
-          </td>
+                            <div style="background-color: #f4f4f4; padding: 20px; font-size: 28px; font-weight: 700; color: #017E5E; border-radius: 8px; margin: 20px 0; display: inline-block; letter-spacing: 4px;">
+                                {verificationToken}
+                            </div>
+                            <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                                This code will expire in <strong>10 minutes</strong>. If you didn't request this, please ignore this email.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-top: 1px solid #e0e0e0; padding: 20px 30px; text-align: center;">
+                            <p style="font-size: 14px; color: #777; margin: 0;">
+                                Need help? <a href="mailto:mail.localvibe@gmail.com" style="color: #017E5E; text-decoration: none; font-weight: 500;">Contact us.</a>.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; padding: 20px; font-size: 12px; color: #999; background-color: #f9f9f9;">
+                            <p style="margin: 0;">&copy; 2024 LocalVibe. All rights reserved.</p>
+                            <p style="margin: 5px 0 0;">You are receiving this email because you signed up for LocalVibe.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
         </tr>
-      </tbody>
     </table>
-    <!--/$-->
-  </body>
+</body>
 </html>
 `;
 

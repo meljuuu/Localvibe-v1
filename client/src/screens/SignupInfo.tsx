@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   View,
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import ImagePicker, {ImageOrVideo} from 'react-native-image-crop-picker';
@@ -61,88 +63,94 @@ const SignupScreen = ({navigation}: Props) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Image style={styles.backgroundImage} source={backgroundImage} />
-      <View style={styles.logoContainer}>
-        <Image style={styles.logo} source={logo} />
-      </View>
-      <View style={styles.contentContainer}>
-        <View style={styles.formContainer}>
-          <View style={styles.profileContainer}>
-            <View style={styles.profileDetails}>
-              <Text style={styles.heading}>Setting up profile</Text>
-              <Text style={styles.subheading}>Join to explore!</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <View style={styles.container}>
+        <Image style={styles.backgroundImage} source={backgroundImage} />
+        <View style={styles.logoContainer}>
+          <Image style={styles.logo} source={logo} />
+        </View>
+        <View style={styles.contentContainer}>
+          <View style={styles.formContainer}>
+            <View style={styles.profileContainer}>
+              <View style={styles.profileDetails}>
+                <Text style={styles.heading}>Setting up profile</Text>
+                <Text style={styles.subheading}>Join to explore!</Text>
+              </View>
+
+              <TouchableOpacity style={styles.uploadButton} onPress={uploadImage}>
+                <Image
+                  style={styles.avatar}
+                  source={{
+                    uri: avatar
+                      ? avatar
+                      : 'https://cdn-icons-png.flaticon.com/512/8801/8801434.png',
+                  }}
+                />
+                <Text style={styles.uploadText} onPress={uploadImage}>
+                  Upload Profile Icon
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.uploadButton} onPress={uploadImage}>
-              <Image
-                style={styles.avatar}
-                source={{
-                  uri: avatar
-                    ? avatar
-                    : 'https://cdn-icons-png.flaticon.com/512/8801/8801434.png',
-                }}
-              />
-              <Text style={styles.uploadText} onPress={uploadImage}>
-                Upload Profile Icon
-              </Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>First Name</Text>
+                <TextInput
+                  placeholder="First Name"
+                  value={firstName}
+                  onChangeText={text => setFirstName(text)}
+                  style={styles.input}
+                />
+              </View>
 
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>First Name</Text>
-              <TextInput
-                placeholder="First Name"
-                value={firstName}
-                onChangeText={text => setFirstName(text)}
-                style={styles.input}
-              />
-            </View>
-
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Last Name</Text>
-              <TextInput
-                placeholder="Last Name"
-                value={lastName}
-                onChangeText={text => setLastName(text)}
-                style={styles.input}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Username</Text>
-              <TextInput
-                placeholder="Username"
-                value={name}
-                onChangeText={text => setName(text)}
-                style={styles.input}
-              />
-            </View>
-
-            <View style={styles.pickerContainer}>
-              <Text style={styles.inputLabel}>Account Type</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  prompt="Select an account type"
-                  selectedValue={accountType}
-                  onValueChange={itemValue => setAccountType(itemValue)}
-                  style={styles.picker}>
-                  <Picker.Item label="Personal" value="personal" />
-                  <Picker.Item label="Business" value="business" />
-                </Picker>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Last Name</Text>
+                <TextInput
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChangeText={text => setLastName(text)}
+                  style={styles.input}
+                />
               </View>
             </View>
-          </View>
 
-          <TouchableOpacity onPress={submitHandler} style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>Register</Text>
-          </TouchableOpacity>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Username</Text>
+                <TextInput
+                  placeholder="Username"
+                  value={name}
+                  onChangeText={text => setName(text)}
+                  style={styles.input}
+                />
+              </View>
+
+              <View style={styles.pickerContainer}>
+                <Text style={styles.inputLabel}>Account Type</Text>
+                <View style={styles.pickerWrapper}>
+                  <Picker
+                    prompt="Select an account type"
+                    selectedValue={accountType}
+                    onValueChange={itemValue => setAccountType(itemValue)}
+                    style={styles.picker}>
+                    <Picker.Item label="Personal" value="personal" />
+                    <Picker.Item label="Business" value="business" />
+                  </Picker>
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity onPress={submitHandler} style={styles.submitButton}>
+              <Text style={styles.submitButtonText}>Register</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

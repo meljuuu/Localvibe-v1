@@ -4,6 +4,8 @@ import SignUpScreen from '../src/screens/SignupScreen';
 import SignUpInfo from '../src/screens/SignupInfo';
 import OnBoarding from '../src/screens/OnBoarding';
 import VerifyEmail from '../src/screens/EmailVerificationScreen';
+import ForgotPassword from '../src/screens/ForgotPasswordScreen';
+
 import {getItem, setItem} from '../utils/asyncStorage';
 
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -43,6 +45,8 @@ const Auth = (props: Props) => {
         <Stack.Screen name="Signup" component={SignUpScreen} />
         <Stack.Screen name="Signinfo" component={SignUpInfo} />
         <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+
       </Stack.Navigator>
     );
   } else {
@@ -56,6 +60,7 @@ const Auth = (props: Props) => {
         <Stack.Screen name="Signup" component={SignUpScreen} />
         <Stack.Screen name="Signinfo" component={SignUpInfo} />
         <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
       </Stack.Navigator>
     );
   }

@@ -303,7 +303,7 @@ const ProfileScreen = ({navigation}) => {
                 userPosts.length > 0 ? (
                   userPosts.map(item => <PostCard key={item._id} item={item} />) // Map over userPosts
                 ) : (
-                  <Text>You have no posts yet!</Text>
+                  <Text style={styles.textCenter}>You have no posts yet!</Text>
                 )
               ) : vibesData.length > 0 ? (
                 <FlatList
@@ -312,7 +312,7 @@ const ProfileScreen = ({navigation}) => {
                   renderItem={({item}) => <PostCard item={item} />}
                 />
               ) : (
-                <Text>No posts available</Text>
+                  <Text style={styles.textCenter}>No posts available</Text>
               )}
             </View>
           </View>
@@ -323,6 +323,9 @@ const ProfileScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  textCenter:{
+    textAlign: 'center',
+  },
   subMainContainer: {
     backgroundColor: '#fff',
     top: -60,

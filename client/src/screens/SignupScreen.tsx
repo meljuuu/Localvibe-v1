@@ -30,7 +30,6 @@ const SignupScreen = ({navigation, route}: Props) => {
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('');
   const [accountType, setAccountType] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {error, isAuthenticated} = useSelector((state: any) => state.user);
 
@@ -98,7 +97,7 @@ const SignupScreen = ({navigation, route}: Props) => {
   }, [error, isAuthenticated, navigation]);
 
   return (
-    <View style={[styles.container, isFocused && styles.containerFocused]}>
+    <View style={styles.container}>
       <StatusBar
         translucent
         backgroundColor="transparent"
@@ -124,8 +123,6 @@ const SignupScreen = ({navigation, route}: Props) => {
                     placeholder="Email or Phone Number"
                     value={email}
                     onChangeText={text => setEmail(text)}
-                    onFocus={() => setIsFocused(true)} // Handle focus
-                    onBlur={() => setIsFocused(false)} // Handle blur
                     style={styles.input}
                   />
                 </View>
@@ -135,8 +132,6 @@ const SignupScreen = ({navigation, route}: Props) => {
                     placeholder="Password"
                     value={password}
                     onChangeText={text => setPassword(text)}
-                    onFocus={() => setIsFocused(true)} // Handle focus
-                    onBlur={() => setIsFocused(false)} // Handle blur
                     style={styles.input}
                     secureTextEntry={true}
                   />
@@ -147,8 +142,6 @@ const SignupScreen = ({navigation, route}: Props) => {
                     placeholder="Confirm Password"
                     value={confirmPassword}
                     onChangeText={text => setConfirmPassword(text)}
-                    onFocus={() => setIsFocused(true)} // Handle focus
-                    onBlur={() => setIsFocused(false)} // Handle blur
                     style={styles.input}
                     secureTextEntry={true}
                   />
@@ -427,11 +420,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     marginBottom: 10,
+    width: '100%',
   },
   loginBlock: {
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     marginHorizontal: '8%',
+    width: '80%',
   },
   gettingStarted: {
     flexDirection: 'column',
@@ -458,6 +453,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     marginBottom: 10,
+    width: '100%',
   },
   inputContainer: {
     height: 60,
@@ -465,6 +461,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     marginBottom: 22,
+    width: '100%',
   },
   inputLabel: {
     width: '100%',
@@ -475,7 +472,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   input: {
-    width: 341,
+    width: '100%',
     height: 39,
     backgroundColor: 'white',
     borderRadius: 10,
