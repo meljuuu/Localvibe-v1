@@ -77,6 +77,9 @@ const HomeScreen = ({navigation, route}: Props) => {
   });
 
   const [alertShown, setAlertShown] = useState(false);
+  const [previousUserData, setPreviousUserData] = useState(userData); // Track previous user data
+
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false); // State for welcome modal
 
   // Function to store user ID in AsyncStorage
   const storeUserId = async () => {
@@ -93,13 +96,18 @@ const HomeScreen = ({navigation, route}: Props) => {
   };
 
   useEffect(() => {
-    if (user && !user.isVerified) {
-      if (!alertShown) {
-        alert("You need to verify your email first");
-        setAlertShown(true);
+    const checkEmailVerification = async () => {
+      const isEmailVerified = await AsyncStorage.getItem('isEmailVerified');
+      if (user && !user.isVerified && isEmailVerified !== 'true') {
+        if (!alertShown) {
+          alert("You need to verify your email first");
+          setAlertShown(true);
+        }
+        navigation.replace('VerifyEmail');
       }
-      navigation.replace('VerifyEmail');
-    }
+    };
+
+    checkEmailVerification(); // Call the function to check email verification
     // Store the user's location in AsyncStorage when the component mounts
     storeUserLocation();
     storeUserId();
@@ -403,6 +411,23 @@ const HomeScreen = ({navigation, route}: Props) => {
     }
   };
 
+  useEffect(() => {
+    const checkWelcomeModal = async () => {
+      const hasShownWelcomeModal = await AsyncStorage.getItem('hasShownWelcomeModal');
+      if (hasShownWelcomeModal !== 'true') {
+        setShowWelcomeModal(true); // Show the welcome modal if it hasn't been shown
+      }
+    };
+
+    checkWelcomeModal(); // Call the function to check welcome modal
+  }, []); // Run only once on component mount
+
+  const handleContinue = async () => {
+    setShowWelcomeModal(false); // Close the welcome modal
+    await AsyncStorage.setItem('hasShownWelcomeModal', 'true'); // Mark the modal as shown
+    onRefreshHandler(); // Trigger the refresh handler
+  };
+
   return (
     <SafeAreaView className="flex-1 pb-20">
       <StatusBar
@@ -503,6 +528,24 @@ const HomeScreen = ({navigation, route}: Props) => {
           </View>
         </View>
       </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showWelcomeModal}
+        onRequestClose={() => setShowWelcomeModal(false)}>
+        <View style={styles.mainModalContainer}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.text1}>Welcome to LocalVibe!</Text>
+            <Text style={styles.information}>
+              LocalVibe connects you with your community by providing personalized news, events, and recommendations based on your location. 
+              Explore what's happening around you and stay updated with the latest happenings!
+            </Text>
+            <TouchableOpacity style={styles.button1} onPress={handleContinue}>
+              <Text style={styles.buttonText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -528,11 +571,25 @@ const styles = StyleSheet.create({
     width: '40%',
     backgroundColor: '#017E5E',
   },
+  button1: {
+    borderColor: '#c0c0c0',
+    elevation: 10,
+    borderRadius: 30,
+    borderWidth: 1,
+    padding: 10,
+    backgroundColor: '#017E5E',
+  },
   text: {
     fontSize: 20,
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  text1: {
+    fontSize: 20,
+    fontFamily: 'Roboto',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   textContainer: {
     width: '100%',
