@@ -245,6 +245,20 @@ const MapScreen = ({navigation}: Props) => {
     },
   ]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const {users, user, token} = useSelector((state: any) => state.user);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredPins, setFilteredPins] = useState(nearbyPins);
+  const userLat = user.latitude;
+  const userLon = user.longitude;
+  const [newProximityThreshold, setNewProximityThreshold] = useState(5);
+  const nearbyPins = localPins.filter(pin => {
+    const distance = calculateDistance(userLat, userLon, pin.latitude, pin.longitude);
+    return distance <= newProximityThreshold; // Only include pins within the threshold
+    
+  });
+
+
+
   // Set initial categories in useEffect
   useEffect(() => {
     // Set to all categories initially
@@ -300,8 +314,6 @@ const MapScreen = ({navigation}: Props) => {
     );
   };
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredPins, setFilteredPins] = useState(localPins);
   useEffect(() => {
     if (localPins) {
       const results = localPins.filter(pin =>
@@ -310,10 +322,11 @@ const MapScreen = ({navigation}: Props) => {
       setFilteredPins(results); // Update the filtered pins
     }
   }, [searchQuery, localPins]); // Include both dependencies
+
+  
   const [pinnedCategories, setPinnedCategories] = React.useState([]);
   const [userLocation, setUserLocation] = useState<GeoPosition | null>(null);
   const [watchID, setWatchID] = useState<number | null>(null);
-  const {users, user, token} = useSelector((state: any) => state.user);
   const dispatch = useDispatch();
 
   const handleVisitPress = (pins: any) => {
@@ -355,7 +368,30 @@ const MapScreen = ({navigation}: Props) => {
   });
   const [image, setImage] = useState('');
 
-  const [newProximityThreshold, setNewProximityThreshold] = useState(5);
+  const [filteredNearbyPins, setFilteredNearbyPins] = useState([]); // New state for filtered nearby pins
+
+  // Function to filter nearby pins based on search query and selected categories
+  const filterNearbyPins = () => {
+    const filteredByDistance = localPins.filter(pin => {
+      const distance = calculateDistance(userLat, userLon, pin.latitude, pin.longitude);
+      return distance <= newProximityThreshold; // Only include pins within the threshold
+    });
+  
+    const filteredBySearch = filteredByDistance.filter(pin =>
+      pin.businessName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  
+    const finalFilteredPins = selectedCategories.includes('default')
+      ? filteredBySearch // Show all if 'default' is selected
+      : filteredBySearch.filter(pin => selectedCategories.includes(pin.category));
+  
+    setFilteredNearbyPins(finalFilteredPins); // Update the filtered nearby pins state
+  };
+  
+  // Call filterNearbyPins whenever localPins, searchQuery, or selectedCategories change
+  useEffect(() => {
+    filterNearbyPins();
+  }, [localPins, searchQuery, selectedCategories]);
 
   const [center, setCenter] = useState({
     latitude: user?.latitude,
@@ -949,15 +985,7 @@ const decodePolyline = encoded => {
     </TouchableOpacity>
   );
 
-  const userLat = user.latitude;
-  const userLon = user.longitude;
 
-  const nearbyPins = localPins.filter(pin => {
-
-
-    const distance = calculateDistance(userLat, userLon, pin.latitude, pin.longitude);
-    return distance <= newProximityThreshold; // Only include pins within the threshold
-  });
 
   // Set default values for center coordinates
   const defaultCenter = {
@@ -1012,7 +1040,7 @@ const decodePolyline = encoded => {
         )}
 
         {/* Nearby Pins */}
-        {nearbyPins
+        {filteredNearbyPins
           .map((pin: any) => {
             // Ensure pin.latitude and pin.longitude are valid
             if (pin.latitude && pin.longitude) {
@@ -1390,7 +1418,7 @@ const decodePolyline = encoded => {
         }}>
         <FlatList
           horizontal
-          data={nearbyPins}
+          data={filteredNearbyPins}
           showsHorizontalScrollIndicator={false}
           renderItem={({item}) => (
             <TouchableOpacity onPress={() => handleVisitPress(item)}>
