@@ -5,13 +5,13 @@ const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 // Create or increment a report
 exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { userId, reportedItemId, itemType, reason, itemTitle, imageUrl } = req.body;
+    const { userId, reportedItemId, itemType, reason, reportTitle, reportImage } = req.body;
 
     // Log the incoming request body
     console.log('Request body:', req.body);
 
     // Validate required fields
-    if (!userId || !reportedItemId || !itemType || !reason || !itemTitle || !imageUrl) {
+    if (!userId || !reportedItemId || !itemType || !reason || !reportTitle || !reportImage) {
       return next(new ErrorHandler("All fields are required", 400));
     }
 
@@ -32,8 +32,8 @@ exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
         reportedItemId,
         itemType,
         reason,
-        itemTitle,
-        imageUrl,
+        reportTitle,
+        reportImage,
       });
 
       return res.status(201).json({
@@ -43,11 +43,12 @@ exports.createOrUpdateReport = catchAsyncErrors(async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error('Error in createOrUpdateReport:', error); // Log the error for debugging
-    console.error('Full error object:', error); // Log the full error object
+    console.error('Error in createOrUpdateReport:', error);
+    console.error('Full error object:', error);
     return next(new ErrorHandler(error.message || "Internal Server Error", 500));
   }
 });
+
 
 // Get all reports
 exports.getAllReports = catchAsyncErrors(async (req, res, next) => {
