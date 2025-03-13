@@ -1,5 +1,6 @@
 {
     "version": 2,
+    "name": "localvibe-delta",
     "builds": [
         {
             "src": "server.js",
